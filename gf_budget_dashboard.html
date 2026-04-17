@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Budget</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Budget">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:wght@400;600&family=Lato:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg: #fdf6f8;
+    --surface: #fff;
+    --surface2: #fce8ef;
+    --accent: #D4537E;
+    --accent2: #ED93B1;
+    --accent3: #F4C0D1;
+    --text: #72243E;
+    --text2: #993556;
+    --text3: #D4537E;
+    --border: rgba(212,83,126,0.18);
+    --danger: #c0392b;
+    --good: #2e7d52;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Lato', sans-serif;
+    min-height: 100vh;
+    padding: 16px;
+  }
+  .loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 80vh;
+    gap: 16px;
+  }
+  .loading-text { color: var(--text2); font-size: 14px; letter-spacing: 2px; font-family: 'DM Mono', monospace; }
+  .spinner {
+    width: 40px; height: 40px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .dash { max-width: 1100px; margin: 0 auto; }
+
+  .header {
+    display: grid;
+    grid-template-columns: auto 1fr 1fr 1fr auto;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    padding: 10px 18px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+  }
+  .hcard {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 16px;
+    text-align: center;
+  }
+  .hcard .lbl { font-size: 10px; color: var(--text2); letter-spacing: 1px; margin-bottom: 3px; font-family: 'DM Mono', monospace; }
+  .hcard .val { font-size: 17px; font-weight: 600; color: var(--text); }
+  .refresh-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-family: 'Lato', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .refresh-btn:hover { opacity: 0.85; }
+
+  .selectors {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .sel-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .sel-label { font-size: 10px; color: var(--text2); letter-spacing: 1px; margin-bottom: 8px; font-family: 'DM Mono', monospace; }
+  .month-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+  .year-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+  .sel-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text2);
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    padding: 6px 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .sel-btn:hover { border-color: var(--accent); color: var(--text); }
+  .sel-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    text-align: center;
+  }
+  .stat-card .lbl { font-size: 10px; color: var(--text2); letter-spacing: 1px; margin-bottom: 4px; font-family: 'DM Mono', monospace; }
+  .stat-card .val { font-size: 20px; font-weight: 700; }
+  .stat-card .val.good { color: var(--good); }
+  .stat-card .val.bad { color: var(--danger); }
+  .stat-card .val.neutral { color: var(--text); }
+
+  .charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .chart-card.full { margin-bottom: 8px; }
+  .ctitle {
+    font-size: 10px;
+    color: var(--text2);
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+    font-family: 'DM Mono', monospace;
+    text-transform: uppercase;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 8px;
+    font-size: 11px;
+    color: var(--text2);
+    font-family: 'DM Mono', monospace;
+  }
+  .legend span { display: flex; align-items: center; gap: 5px; }
+  .leg-dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; flex-shrink: 0; }
+  .canvas-wrap { position: relative; }
+
+  @media (max-width: 640px) {
+    body { padding: 10px; }
+    .header { grid-template-columns: 1fr 1fr; }
+    .brand { grid-column: 1 / -1; text-align: center; }
+    .refresh-btn { grid-column: 1 / -1; }
+    .selectors { grid-template-columns: 1fr; }
+    .month-grid { grid-template-columns: repeat(4, 1fr); }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .charts-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loading" class="loading">
+  <div class="spinner"></div>
+  <div class="loading-text">LOADING...</div>
+</div>
+
+<div id="app" class="dash" style="display:none">
+
+  <div class="header">
+    <div class="brand">Budget</div>
+    <div class="hcard"><div class="lbl">YTD EXPENSES</div><div class="val" id="ytd-exp">—</div></div>
+    <div class="hcard"><div class="lbl">YTD SAVED</div><div class="val" id="ytd-sav">—</div></div>
+    <div class="hcard"><div class="lbl">TODAY</div><div class="val" id="today-date" style="font-size:13px">—</div></div>
+    <button class="refresh-btn" onclick="loadData()">REFRESH</button>
+  </div>
+
+  <div class="selectors">
+    <div class="sel-box">
+      <div class="sel-label">SELECT MONTH</div>
+      <div class="month-grid" id="month-grid"></div>
+    </div>
+    <div class="sel-box">
+      <div class="sel-label">SELECT YEAR</div>
+      <div class="year-grid" id="year-grid"></div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="lbl">TOTAL BUDGETED</div><div class="val neutral" id="total-budget">—</div></div>
+    <div class="stat-card"><div class="lbl">TOTAL ACTUAL</div><div class="val neutral" id="total-actual">—</div></div>
+    <div class="stat-card"><div class="lbl">LEFT TO SPEND</div><div class="val" id="left-spend">—</div></div>
+    <div class="stat-card"><div class="lbl">CATEGORIES</div><div class="val neutral" id="cat-count">—</div></div>
+  </div>
+
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="ctitle">Expense breakdown</div>
+      <div class="canvas-wrap" style="height:220px"><canvas id="pieChart" role="img" aria-label="Pie chart of expense breakdown"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="ctitle">Budget vs actual</div>
+      <div class="legend">
+        <span><span class="leg-dot" style="background:#993556"></span>Budgeted</span>
+        <span><span class="leg-dot" style="background:#ED93B1"></span>Actual</span>
+      </div>
+      <div class="canvas-wrap" style="height:200px"><canvas id="barChart" role="img" aria-label="Budget vs actual by category"></canvas></div>
+    </div>
+  </div>
+
+  <div class="chart-card full">
+    <div class="ctitle">Spending trend — all categories over time</div>
+    <div class="canvas-wrap" style="height:200px"><canvas id="trendChart" role="img" aria-label="Spending trend over time"></canvas></div>
+  </div>
+
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz8WUGdSFqHj0pk0x1dEdlP6uioZLwXLHGlWLBZ5N8BLNkgm_Qq1U3VuIaZhnSHE285xg/exec';
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const YEARS = [2024, 2025, 2026];
+const PIE_COLORS = ['#D4537E','#ED93B1','#993556','#F4C0D1','#72243E','#FBEAF0','#F0997B'];
+
+let RAW = [];
+let selMonth = new Date().getMonth() + 1;
+let selYear = new Date().getFullYear();
+let pieChart, barChart, trendChart;
+
+function fmt(n) {
+  return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+async function loadData() {
+  document.getElementById('loading').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  try {
+    const res = await fetch(SCRIPT_URL);
+    const json = await res.json();
+    RAW = json.map(r => {
+      const d = new Date(r.date);
+      return { date: d, type: r.type, category: r.category, budget: parseFloat(r.budget) || 0, actual: parseFloat(r.actual) || 0 };
+    }).filter(r => !isNaN(r.date.getTime()));
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    buildSelectors();
+    update();
+  } catch(e) {
+    document.getElementById('loading').innerHTML = '<div class="loading-text" style="color:#c0392b">ERROR LOADING DATA</div>';
+  }
+}
+
+function getFiltered(m, y) {
+  return RAW.filter(r => r.date.getMonth() + 1 === m && r.date.getFullYear() === y);
+}
+
+function buildSelectors() {
+  const mg = document.getElementById('month-grid');
+  mg.innerHTML = '';
+  MONTHS.forEach((m, i) => {
+    const b = document.createElement('button');
+    b.className = 'sel-btn' + (i + 1 === selMonth ? ' active' : '');
+    b.textContent = m;
+    b.onclick = () => { selMonth = i + 1; update(); };
+    mg.appendChild(b);
+  });
+  const yg = document.getElementById('year-grid');
+  yg.innerHTML = '';
+  YEARS.forEach(y => {
+    const b = document.createElement('button');
+    b.className = 'sel-btn' + (y === selYear ? ' active' : '');
+    b.textContent = y;
+    b.onclick = () => { selYear = y; update(); };
+    yg.appendChild(b);
+  });
+}
+
+function updateSelectors() {
+  document.querySelectorAll('#month-grid .sel-btn').forEach((b, i) => { b.className = 'sel-btn' + (i + 1 === selMonth ? ' active' : ''); });
+  document.querySelectorAll('#year-grid .sel-btn').forEach((b, i) => { b.className = 'sel-btn' + (YEARS[i] === selYear ? ' active' : ''); });
+}
+
+function update() {
+  updateSelectors();
+  const rows = getFiltered(selMonth, selYear);
+  const ytdRows = RAW.filter(r => r.date.getFullYear() === selYear && r.date.getMonth() + 1 <= selMonth);
+
+  const expenses = rows.filter(r => r.type === 'Expenses');
+
+  const expMap = {};
+  expenses.forEach(r => {
+    if (!expMap[r.category]) expMap[r.category] = { budget: 0, actual: 0 };
+    expMap[r.category].actual += r.actual;
+    expMap[r.category].budget = Math.max(expMap[r.category].budget, r.budget);
+  });
+  const expGrouped = Object.entries(expMap).map(([category, v]) => ({ category, budget: v.budget, actual: v.actual }));
+
+  const totalBudget = expGrouped.reduce((s, r) => s + r.budget, 0);
+  const totalActual = expGrouped.reduce((s, r) => s + r.actual, 0);
+  const left = totalBudget - totalActual;
+
+  const ytdExpenses = ytdRows.filter(r => r.type === 'Expenses');
+  const ytdMonthMap = {};
+  ytdExpenses.forEach(r => {
+    const mKey = r.date.getMonth();
+    if (!ytdMonthMap[mKey]) ytdMonthMap[mKey] = {};
+    if (!ytdMonthMap[mKey][r.category]) ytdMonthMap[mKey][r.category] = { budget: 0, actual: 0 };
+    ytdMonthMap[mKey][r.category].actual += r.actual;
+    ytdMonthMap[mKey][r.category].budget = Math.max(ytdMonthMap[mKey][r.category].budget, r.budget);
+  });
+  let ytdBudget = 0, ytdActual = 0;
+  Object.values(ytdMonthMap).forEach(monthCats => {
+    Object.values(monthCats).forEach(v => { ytdBudget += v.budget; ytdActual += v.actual; });
+  });
+  const ytdSaved = ytdBudget - ytdActual;
+
+  document.getElementById('ytd-exp').textContent = fmt(ytdActual);
+  document.getElementById('ytd-sav').textContent = fmt(ytdSaved);
+  document.getElementById('total-budget').textContent = fmt(totalBudget);
+  document.getElementById('total-actual').textContent = fmt(totalActual);
+  document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+  document.getElementById('cat-count').textContent = expGrouped.length;
+
+  const leftEl = document.getElementById('left-spend');
+  leftEl.textContent = fmt(left);
+  leftEl.className = 'val ' + (left >= 0 ? 'good' : 'bad');
+
+  const ytdSavEl = document.getElementById('ytd-sav');
+  ytdSavEl.style.color = ytdSaved >= 0 ? 'var(--good)' : 'var(--danger)';
+
+  updatePie(expGrouped);
+  updateBar(expGrouped);
+  updateTrend();
+}
+
+function updatePie(expGrouped) {
+  if (pieChart) pieChart.destroy();
+  const cats = expGrouped.filter(r => r.actual > 0);
+  pieChart = new Chart(document.getElementById('pieChart'), {
+    type: 'pie',
+    data: {
+      labels: cats.map(r => r.category),
+      datasets: [{ data: cats.map(r => r.actual), backgroundColor: PIE_COLORS, borderWidth: 1, borderColor: '#fdf6f8' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true, position: 'right', labels: { color: '#993556', font: { size: 10, family: 'DM Mono' }, boxWidth: 10, padding: 6 } },
+        tooltip: { callbacks: { label: ctx => ' ' + ctx.label + ': $' + ctx.parsed.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) } }
+      }
+    }
+  });
+}
+
+function updateBar(expGrouped) {
+  if (barChart) barChart.destroy();
+  barChart = new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+      labels: expGrouped.map(r => r.category),
+      datasets: [
+        { label: 'Budgeted', data: expGrouped.map(r => r.budget), backgroundColor: '#993556', borderRadius: 3 },
+        { label: 'Actual', data: expGrouped.map(r => r.actual), backgroundColor: '#ED93B1', borderRadius: 3 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) } }
+      },
+      scales: {
+        x: { ticks: { color: '#993556', font: { size: 9, family: 'DM Mono' }, maxRotation: 45 }, grid: { color: 'rgba(212,83,126,0.08)' } },
+        y: { ticks: { color: '#993556', font: { size: 9, family: 'DM Mono' }, callback: v => '$' + v.toLocaleString() }, grid: { color: 'rgba(212,83,126,0.08)' } }
+      }
+    }
+  });
+}
+
+function updateTrend() {
+  const monthlyRows = RAW.filter(r => r.date.getFullYear() === selYear && r.type === 'Expenses');
+  const monthTotals = {};
+  monthlyRows.forEach(r => {
+    const m = r.date.getMonth();
+    if (!monthTotals[m]) monthTotals[m] = 0;
+    monthTotals[m] += r.actual;
+  });
+  const labels = Object.keys(monthTotals).sort((a,b)=>a-b).map(m => MONTHS[m]);
+  const vals = Object.keys(monthTotals).sort((a,b)=>a-b).map(m => parseFloat(monthTotals[m].toFixed(2)));
+
+  if (trendChart) trendChart.destroy();
+  trendChart = new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{ data: vals, borderColor: '#D4537E', backgroundColor: 'rgba(212,83,126,0.08)', fill: true, tension: 0.3, pointRadius: 4, pointBackgroundColor: '#D4537E' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ' $' + ctx.parsed.y.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) } }
+      },
+      scales: {
+        x: { ticks: { color: '#993556', font: { size: 9, family: 'DM Mono' } }, grid: { color: 'rgba(212,83,126,0.08)' } },
+        y: { ticks: { color: '#993556', font: { size: 9, family: 'DM Mono' }, callback: v => '$' + v.toLocaleString() }, grid: { color: 'rgba(212,83,126,0.08)' } }
+      }
+    }
+  });
+}
+
+loadData();
+</script>
+</body>
+</html>
