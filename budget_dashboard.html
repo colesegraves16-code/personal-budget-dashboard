@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Budget</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Budget">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" type="image/png" href="icon.png">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg: #0a1f1a;
+    --surface: #0d2b24;
+    --surface2: #0f3329;
+    --accent: #1D9E75;
+    --accent2: #5DCAA5;
+    --accent3: #9FE1CB;
+    --text: #e8f5f0;
+    --text2: #9FE1CB;
+    --text3: #5DCAA5;
+    --border: rgba(29,158,117,0.2);
+    --danger: #e05c5c;
+    --warning: #e0a85c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    padding: 16px;
+  }
+  .loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 80vh;
+    gap: 16px;
+  }
+  .loading-text { color: var(--text2); font-size: 14px; letter-spacing: 2px; }
+  .spinner {
+    width: 40px; height: 40px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .dash { max-width: 1100px; margin: 0 auto; }
+
+  /* HEADER */
+  .header {
+    display: grid;
+    grid-template-columns: auto 1fr 1fr 1fr auto;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .brand {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--text);
+    padding: 10px 18px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+  }
+  .hcard {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 16px;
+    text-align: center;
+  }
+  .hcard .lbl { font-size: 10px; color: var(--text2); letter-spacing: 1px; margin-bottom: 3px; font-family: 'DM Mono', monospace; }
+  .hcard .val { font-size: 17px; font-weight: 600; color: var(--text); }
+  .refresh-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .refresh-btn:hover { opacity: 0.85; }
+
+  /* SELECTORS */
+  .selectors {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .sel-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .sel-label { font-size: 10px; color: var(--text2); letter-spacing: 1px; margin-bottom: 8px; font-family: 'DM Mono', monospace; }
+  .month-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+  .year-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+  .sel-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text2);
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    padding: 6px 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .sel-btn:hover { border-color: var(--accent); color: var(--text); }
+  .sel-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    text-align: center;
+  }
+  .stat-card .lbl { font-size: 10px; color: var(--text2); letter-spacing: 1px; margin-bottom: 4px; font-family: 'DM Mono', monospace; }
+  .stat-card .val { font-size: 20px; font-weight: 700; }
+  .stat-card .val.good { color: var(--accent2); }
+  .stat-card .val.bad { color: var(--danger); }
+  .stat-card .val.neutral { color: var(--text); }
+
+  /* CHARTS */
+  .charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .chart-card.full {
+    margin-bottom: 8px;
+  }
+  .ctitle {
+    font-size: 10px;
+    color: var(--text2);
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+    font-family: 'DM Mono', monospace;
+    text-transform: uppercase;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 8px;
+    font-size: 11px;
+    color: var(--text2);
+    font-family: 'DM Mono', monospace;
+  }
+  .legend span { display: flex; align-items: center; gap: 5px; }
+  .leg-dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; flex-shrink: 0; }
+  .canvas-wrap { position: relative; }
+
+  /* MOBILE */
+  @media (max-width: 640px) {
+    body { padding: 10px; }
+    .header { grid-template-columns: 1fr 1fr; }
+    .brand { grid-column: 1 / -1; text-align: center; }
+    .refresh-btn { grid-column: 1 / -1; }
+    .selectors { grid-template-columns: 1fr; }
+    .month-grid { grid-template-columns: repeat(4, 1fr); }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .charts-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loading" class="loading">
+  <div class="spinner"></div>
+  <div class="loading-text">LOADING YOUR DATA...</div>
+</div>
+
+<div id="app" class="dash" style="display:none">
+
+  <div class="header">
+    <div class="brand">BUDGET</div>
+    <div class="hcard"><div class="lbl">YTD EXPENSES</div><div class="val" id="ytd-exp">—</div></div>
+    <div class="hcard"><div class="lbl">YTD SAVED</div><div class="val" id="ytd-sav">—</div></div>
+    <div class="hcard"><div class="lbl">TODAY</div><div class="val" id="today-date" style="font-size:13px">—</div></div>
+    <button class="refresh-btn" onclick="loadData()">REFRESH</button>
+  </div>
+
+  <div class="selectors">
+    <div class="sel-box">
+      <div class="sel-label">SELECT MONTH</div>
+      <div class="month-grid" id="month-grid"></div>
+    </div>
+    <div class="sel-box">
+      <div class="sel-label">SELECT YEAR</div>
+      <div class="year-grid" id="year-grid"></div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="lbl">TOTAL BUDGETED</div><div class="val neutral" id="total-budget">—</div></div>
+    <div class="stat-card"><div class="lbl">TOTAL ACTUAL</div><div class="val neutral" id="total-actual">—</div></div>
+    <div class="stat-card"><div class="lbl">LEFT TO SPEND</div><div class="val" id="left-spend">—</div></div>
+    <div class="stat-card"><div class="lbl">INVESTMENTS</div><div class="val good" id="total-invest">—</div></div>
+  </div>
+
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="ctitle">Expense breakdown</div>
+      <div class="canvas-wrap" style="height:220px"><canvas id="pieChart" role="img" aria-label="Pie chart of expense breakdown"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="ctitle">Income & investments</div>
+      <div class="canvas-wrap" style="height:220px"><canvas id="incomeChart" role="img" aria-label="Bar chart of income and investments"></canvas></div>
+    </div>
+  </div>
+
+  <div class="chart-card full">
+    <div class="ctitle">Budget vs actual — expenses</div>
+    <div class="legend">
+      <span><span class="leg-dot" style="background:#0F6E56"></span>Budgeted</span>
+      <span><span class="leg-dot" style="background:#5DCAA5"></span>Actual</span>
+    </div>
+    <div class="canvas-wrap" id="bar-wrap"><canvas id="barChart" role="img" aria-label="Budget vs actual by category"></canvas></div>
+  </div>
+
+  <div class="chart-card full">
+    <div class="ctitle">Savings over time</div>
+    <div class="canvas-wrap" style="height:180px"><canvas id="savingsChart" role="img" aria-label="Savings balance over time"></canvas></div>
+  </div>
+
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyheLuDUI5e_dC6Sv-9ilc8YrAfntURqDdF9mGMlVKofU9e6aV3PJSP45xDuO9yMMuD-g/exec';
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const YEARS = [2024, 2025, 2026];
+const PIE_COLORS = ['#1D9E75','#5DCAA5','#0F6E56','#9FE1CB','#085041','#3DCCA0','#08B87A','#E1F5EE','#04927E'];
+
+let RAW = [];
+let selMonth = new Date().getMonth() + 1;
+let selYear = new Date().getFullYear();
+let pieChart, incomeChart, barChart, savingsChart;
+
+function fmt(n) {
+  return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+async function loadData() {
+  document.getElementById('loading').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  try {
+    const res = await fetch(SCRIPT_URL);
+    const json = await res.json();
+    RAW = json.map(r => {
+      const d = new Date(r.date);
+      return {
+        date: d,
+        type: r.type,
+        category: r.category,
+        budget: parseFloat(r.budget) || 0,
+        actual: parseFloat(r.actual) || 0,
+        note: r.note
+      };
+    }).filter(r => !isNaN(r.date.getTime()));
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    buildSelectors();
+    update();
+  } catch(e) {
+    document.getElementById('loading').innerHTML = '<div class="loading-text" style="color:#e05c5c">ERROR LOADING DATA — CHECK CONNECTION</div>';
+  }
+}
+
+function getFiltered(m, y) {
+  return RAW.filter(r => r.date.getMonth() + 1 === m && r.date.getFullYear() === y);
+}
+
+function buildSelectors() {
+  const mg = document.getElementById('month-grid');
+  mg.innerHTML = '';
+  MONTHS.forEach((m, i) => {
+    const b = document.createElement('button');
+    b.className = 'sel-btn' + (i + 1 === selMonth ? ' active' : '');
+    b.textContent = m;
+    b.onclick = () => { selMonth = i + 1; update(); };
+    mg.appendChild(b);
+  });
+  const yg = document.getElementById('year-grid');
+  yg.innerHTML = '';
+  YEARS.forEach(y => {
+    const b = document.createElement('button');
+    b.className = 'sel-btn' + (y === selYear ? ' active' : '');
+    b.textContent = y;
+    b.onclick = () => { selYear = y; update(); };
+    yg.appendChild(b);
+  });
+}
+
+function updateSelectors() {
+  document.querySelectorAll('#month-grid .sel-btn').forEach((b, i) => {
+    b.className = 'sel-btn' + (i + 1 === selMonth ? ' active' : '');
+  });
+  document.querySelectorAll('#year-grid .sel-btn').forEach((b, i) => {
+    b.className = 'sel-btn' + (YEARS[i] === selYear ? ' active' : '');
+  });
+}
+
+function update() {
+  updateSelectors();
+  const rows = getFiltered(selMonth, selYear);
+  const ytdRows = RAW.filter(r => r.date.getFullYear() === selYear);
+
+  const expenses = rows.filter(r => r.type === 'Expenses');
+  const investments = rows.filter(r => r.type === 'Investments');
+
+  const totalBudget = expenses.reduce((s, r) => s + r.budget, 0);
+  const totalActual = expenses.reduce((s, r) => s + r.actual, 0);
+  const left = totalBudget - totalActual;
+  const totalInvest = investments.reduce((s, r) => s + r.actual, 0);
+
+  const ytdExp = ytdRows.filter(r => r.type === 'Expenses').reduce((s, r) => s + r.actual, 0);
+  const ytdBudget = ytdRows.filter(r => r.type === 'Expenses').reduce((s, r) => s + r.budget, 0);
+  const ytdSaved = ytdBudget - ytdExp;
+
+  document.getElementById('ytd-exp').textContent = fmt(ytdExp);
+  document.getElementById('ytd-sav').textContent = fmt(ytdSaved);
+  document.getElementById('total-budget').textContent = fmt(totalBudget);
+  document.getElementById('total-actual').textContent = fmt(totalActual);
+  document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+
+  const leftEl = document.getElementById('left-spend');
+  leftEl.textContent = fmt(left);
+  leftEl.className = 'val ' + (left >= 0 ? 'good' : 'bad');
+
+  document.getElementById('total-invest').textContent = fmt(totalInvest);
+
+  updatePie(expenses);
+  updateIncome(rows);
+  updateBar(expenses);
+  updateSavings();
+}
+
+function updatePie(expenses) {
+  const cats = expenses.filter(r => r.actual > 0);
+  if (pieChart) pieChart.destroy();
+  pieChart = new Chart(document.getElementById('pieChart'), {
+    type: 'pie',
+    data: {
+      labels: cats.map(r => r.category),
+      datasets: [{ data: cats.map(r => r.actual), backgroundColor: PIE_COLORS, borderWidth: 1, borderColor: '#0a1f1a' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true, position: 'right', labels: { color: '#9FE1CB', font: { size: 10, family: 'DM Mono' }, boxWidth: 10, padding: 6 } },
+        tooltip: { callbacks: { label: ctx => ' ' + ctx.label + ': $' + ctx.parsed.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) } }
+      }
+    }
+  });
+}
+
+function updateIncome(rows) {
+  const incRows = rows.filter(r => (r.type === 'Income' || r.type === 'Investments' || r.type === 'Financial Goals') && r.actual > 0);
+  if (incomeChart) incomeChart.destroy();
+  incomeChart = new Chart(document.getElementById('incomeChart'), {
+    type: 'bar',
+    data: {
+      labels: incRows.map(r => r.category),
+      datasets: [{ data: incRows.map(r => r.actual), backgroundColor: '#1D9E75', borderRadius: 4 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ' $' + ctx.parsed.y.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) } }
+      },
+      scales: {
+        x: { ticks: { color: '#9FE1CB', font: { size: 9, family: 'DM Mono' }, maxRotation: 45 }, grid: { color: 'rgba(29,158,117,0.1)' } },
+        y: { ticks: { color: '#9FE1CB', font: { size: 9, family: 'DM Mono' }, callback: v => '$' + v.toLocaleString() }, grid: { color: 'rgba(29,158,117,0.1)' } }
+      }
+    }
+  });
+}
+
+function updateBar(expenses) {
+  const h = Math.max(260, expenses.length * 52 + 80);
+  document.getElementById('bar-wrap').style.height = h + 'px';
+  if (barChart) barChart.destroy();
+  barChart = new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+      labels: expenses.map(r => r.category),
+      datasets: [
+        { label: 'Budgeted', data: expenses.map(r => r.budget), backgroundColor: '#0F6E56', borderRadius: 3 },
+        { label: 'Actual', data: expenses.map(r => r.actual), backgroundColor: '#5DCAA5', borderRadius: 3 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) } }
+      },
+      scales: {
+        x: { ticks: { color: '#9FE1CB', font: { size: 10, family: 'DM Mono' }, autoSkip: false, maxRotation: 45 }, grid: { color: 'rgba(29,158,117,0.1)' } },
+        y: { ticks: { color: '#9FE1CB', font: { size: 10, family: 'DM Mono' }, callback: v => '$' + v.toLocaleString() }, grid: { color: 'rgba(29,158,117,0.1)' } }
+      }
+    }
+  });
+}
+
+function updateSavings() {
+  const savRows = RAW.filter(r => r.category === 'Savings Account' && r.actual > 0)
+    .sort((a, b) => a.date - b.date);
+  if (savingsChart) savingsChart.destroy();
+  savingsChart = new Chart(document.getElementById('savingsChart'), {
+    type: 'line',
+    data: {
+      labels: savRows.map(r => MONTHS[r.date.getMonth()] + ' ' + r.date.getFullYear()),
+      datasets: [{ data: savRows.map(r => r.actual), borderColor: '#1D9E75', backgroundColor: 'rgba(29,158,117,0.12)', fill: true, tension: 0.3, pointRadius: 3, pointBackgroundColor: '#1D9E75' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ' $' + ctx.parsed.y.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) } }
+      },
+      scales: {
+        x: { ticks: { color: '#9FE1CB', font: { size: 9, family: 'DM Mono' }, maxRotation: 45, autoSkip: true, maxTicksLimit: 12 }, grid: { color: 'rgba(29,158,117,0.1)' } },
+        y: { ticks: { color: '#9FE1CB', font: { size: 10, family: 'DM Mono' }, callback: v => '$' + v.toLocaleString() }, grid: { color: 'rgba(29,158,117,0.1)' } }
+      }
+    }
+  });
+}
+
+loadData();
+</script>
+</body>
+</html>
