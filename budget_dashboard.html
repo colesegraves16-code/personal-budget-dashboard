@@ -3,7 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Budget Dashboard</title>
+<title>Budget</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Budget">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" type="image/png" href="icon.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
@@ -204,7 +209,7 @@
   <div class="header">
     <div class="brand">BUDGET</div>
     <div class="hcard"><div class="lbl">YTD EXPENSES</div><div class="val" id="ytd-exp">—</div></div>
-    <div class="hcard"><div class="lbl">YTD SAVINGS</div><div class="val" id="ytd-sav">—</div></div>
+    <div class="hcard"><div class="lbl">YTD SAVED</div><div class="val" id="ytd-sav">—</div></div>
     <div class="hcard"><div class="lbl">TODAY</div><div class="val" id="today-date" style="font-size:13px">—</div></div>
     <button class="refresh-btn" onclick="loadData()">REFRESH</button>
   </div>
@@ -343,11 +348,11 @@ function update() {
   const totalInvest = investments.reduce((s, r) => s + r.actual, 0);
 
   const ytdExp = ytdRows.filter(r => r.type === 'Expenses').reduce((s, r) => s + r.actual, 0);
-  const latestSav = ytdRows.filter(r => r.category === 'Savings Account' && r.actual > 0)
-    .sort((a, b) => b.date - a.date)[0];
+  const ytdBudget = ytdRows.filter(r => r.type === 'Expenses').reduce((s, r) => s + r.budget, 0);
+  const ytdSaved = ytdBudget - ytdExp;
 
   document.getElementById('ytd-exp').textContent = fmt(ytdExp);
-  document.getElementById('ytd-sav').textContent = latestSav ? fmt(latestSav.actual) : '—';
+  document.getElementById('ytd-sav').textContent = fmt(ytdSaved);
   document.getElementById('total-budget').textContent = fmt(totalBudget);
   document.getElementById('total-actual').textContent = fmt(totalActual);
   document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
@@ -375,13 +380,16 @@ function updatePie(expenses) {
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: true, position: 'right', labels: { color: '#9FE1CB', font: { size: 10, family: 'DM Mono' }, boxWidth: 10, padding: 6 } } }
+      plugins: {
+        legend: { display: true, position: 'right', labels: { color: '#9FE1CB', font: { size: 10, family: 'DM Mono' }, boxWidth: 10, padding: 6 } },
+        tooltip: { callbacks: { label: ctx => ' ' + ctx.label + ': $' + ctx.parsed.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) } }
+      }
     }
   });
 }
 
 function updateIncome(rows) {
-  const incRows = rows.filter(r => (r.type === 'Income' || r.type === 'Investments' || r.type === 'Financial Goals' || r.type === 'College') && r.actual > 0);
+  const incRows = rows.filter(r => (r.type === 'Income' || r.type === 'Investments' || r.type === 'Financial Goals') && r.actual > 0);
   if (incomeChart) incomeChart.destroy();
   incomeChart = new Chart(document.getElementById('incomeChart'), {
     type: 'bar',
@@ -391,7 +399,10 @@ function updateIncome(rows) {
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ' $' + ctx.parsed.y.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) } }
+      },
       scales: {
         x: { ticks: { color: '#9FE1CB', font: { size: 9, family: 'DM Mono' }, maxRotation: 45 }, grid: { color: 'rgba(29,158,117,0.1)' } },
         y: { ticks: { color: '#9FE1CB', font: { size: 9, family: 'DM Mono' }, callback: v => '$' + v.toLocaleString() }, grid: { color: 'rgba(29,158,117,0.1)' } }
@@ -415,7 +426,10 @@ function updateBar(expenses) {
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) } }
+      },
       scales: {
         x: { ticks: { color: '#9FE1CB', font: { size: 10, family: 'DM Mono' }, autoSkip: false, maxRotation: 45 }, grid: { color: 'rgba(29,158,117,0.1)' } },
         y: { ticks: { color: '#9FE1CB', font: { size: 10, family: 'DM Mono' }, callback: v => '$' + v.toLocaleString() }, grid: { color: 'rgba(29,158,117,0.1)' } }
@@ -436,7 +450,10 @@ function updateSavings() {
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ' $' + ctx.parsed.y.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) } }
+      },
       scales: {
         x: { ticks: { color: '#9FE1CB', font: { size: 9, family: 'DM Mono' }, maxRotation: 45, autoSkip: true, maxTicksLimit: 12 }, grid: { color: 'rgba(29,158,117,0.1)' } },
         y: { ticks: { color: '#9FE1CB', font: { size: 10, family: 'DM Mono' }, callback: v => '$' + v.toLocaleString() }, grid: { color: 'rgba(29,158,117,0.1)' } }
