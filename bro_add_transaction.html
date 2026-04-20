@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Add Transaction</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Add $">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1a0800;
+    --surface: #2d1200;
+    --accent: #993C1D;
+    --accent2: #F0997B;
+    --text: #F5C4B3;
+    --text2: #F0997B;
+    --border: rgba(153,60,29,0.3);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    min-height: 100vh;
+    padding: 20px 16px 40px;
+  }
+  .wrap { max-width: 480px; margin: 0 auto; }
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .brand { font-size: 20px; font-weight: 700; letter-spacing: 2px; color: var(--text); }
+  .dash-link {
+    font-size: 11px;
+    color: var(--text2);
+    font-family: 'DM Mono', monospace;
+    text-decoration: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+  }
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 10px; color: var(--text2); letter-spacing: 1.5px; font-family: 'DM Mono', monospace; }
+  .field input, .field select, .field textarea {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 16px;
+    padding: 12px 14px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent2); }
+  .field select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23F0997B' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+  .field option { background: #2d1200; }
+  .field textarea { resize: none; height: 80px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .submit-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 16px;
+    cursor: pointer;
+    width: 100%;
+    transition: opacity 0.2s, transform 0.1s;
+    margin-top: 4px;
+  }
+  .submit-btn:hover { opacity: 0.9; }
+  .submit-btn:active { transform: scale(0.98); }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .success-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 20px;
+    gap: 20px;
+  }
+  .success-screen.show { display: flex; }
+  .success-icon {
+    width: 80px; height: 80px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px; color: #fff;
+  }
+  .success-title { font-size: 24px; font-weight: 700; letter-spacing: 1px; color: var(--text); }
+  .success-sub { font-size: 13px; color: var(--text2); font-family: 'DM Mono', monospace; }
+  .add-another-btn {
+    background: transparent;
+    border: 1px solid var(--accent2);
+    border-radius: 10px;
+    color: var(--accent2);
+    font-family: 'Barlow', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 14px 32px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.15s;
+  }
+  .add-another-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .toast {
+    display: none;
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: #fff;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    padding: 12px 24px;
+    border-radius: 30px;
+    letter-spacing: 1px;
+    z-index: 999;
+    white-space: nowrap;
+  }
+  .toast.error { background: #e05c5c; }
+  .toast.show { display: block; animation: fadeup 0.3s ease; }
+  @keyframes fadeup {
+    from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="brand">ADD TRANSACTION</div>
+    <a class="dash-link" href="https://colesegraves16-code.github.io/personal-budget-dashboard/bro_budget_dashboard.html">← DASHBOARD</a>
+  </div>
+
+  <div class="form-card">
+    <div class="row2">
+      <div class="field">
+        <label>DATE</label>
+        <input type="date" id="date" />
+      </div>
+      <div class="field">
+        <label>AMOUNT ($)</label>
+        <input type="number" id="amount" placeholder="0.00" step="0.01" min="0" inputmode="decimal" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label>TYPE</label>
+      <select id="type" onchange="updateCategories()">
+        <option value="">Select type...</option>
+        <option>Expenses</option>
+        <option>Income</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>CATEGORY</label>
+      <select id="category">
+        <option value="">Select type first...</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>NOTE (OPTIONAL)</label>
+      <textarea id="note" placeholder="Add a note..."></textarea>
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="submitTransaction()">ADD TRANSACTION</button>
+  </div>
+
+  <div class="success-screen" id="success-screen">
+    <div class="success-icon">✓</div>
+    <div class="success-title">TRANSACTION ADDED</div>
+    <div class="success-sub" id="success-detail">—</div>
+    <button class="add-another-btn" onclick="resetForm()">ADD ANOTHER</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzJfrJ58Zj2e3LtmS3cxFYndL86CpKkoeZAjj4CpFmVItUZXYqbaqgGUBM2ygJpDz5MQA/exec';
+
+const CATEGORIES = {
+  Expenses: ['Eating Out','Groceries','Gas','Shopping','Services','Jiujitsu','Subscriptions','Miscellaneous','Cash Spending'],
+  Income: ['On The Border','Advanced PT','Miscellaneous']
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('date').value = new Date().toISOString().split('T')[0];
+});
+
+function updateCategories() {
+  const type = document.getElementById('type').value;
+  const catSel = document.getElementById('category');
+  catSel.innerHTML = '';
+  if (!type || !CATEGORIES[type]) {
+    catSel.innerHTML = '<option value="">Select type first...</option>';
+    return;
+  }
+  CATEGORIES[type].forEach(c => {
+    const o = document.createElement('option');
+    o.value = c; o.textContent = c;
+    catSel.appendChild(o);
+  });
+}
+
+function showToast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(() => { t.className = 'toast'; }, 3000);
+}
+
+async function submitTransaction() {
+  const date = document.getElementById('date').value;
+  const amount = document.getElementById('amount').value;
+  const type = document.getElementById('type').value;
+  const category = document.getElementById('category').value;
+  const note = document.getElementById('note').value;
+
+  if (!date || !amount || !type || !category) {
+    showToast('PLEASE FILL ALL FIELDS', true);
+    return;
+  }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'ADDING...';
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date, type, category, actual: parseFloat(amount), note })
+    });
+    const detail = category + ' — $' + parseFloat(amount).toFixed(2);
+    document.getElementById('success-detail').textContent = detail;
+    document.getElementById('success-screen').classList.add('show');
+    document.querySelector('.form-card').style.display = 'none';
+  } catch(e) {
+    showToast('ERROR — TRY AGAIN', true);
+    btn.disabled = false;
+    btn.textContent = 'ADD TRANSACTION';
+    return;
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'ADD TRANSACTION';
+}
+
+function resetForm() {
+  document.getElementById('success-screen').classList.remove('show');
+  document.querySelector('.form-card').style.display = 'flex';
+  document.getElementById('amount').value = '';
+  document.getElementById('note').value = '';
+  document.getElementById('date').value = new Date().toISOString().split('T')[0];
+}
+</script>
+</body>
+</html>
