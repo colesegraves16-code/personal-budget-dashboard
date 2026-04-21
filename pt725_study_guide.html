@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PT 725 — Anatomy Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #F7F4EE;
+  --ink: #1A1814;
+  --ink-soft: #4A4740;
+  --ink-muted: #8A8680;
+  --rule: #D8D4CC;
+  --accent-1: #C44B2B; /* coral/red — clinical */
+  --accent-2: #2B6CB0; /* blue — bone */
+  --accent-3: #276749; /* green — concept */
+  --accent-4: #6B46C1; /* purple — muscle */
+  --accent-5: #B7791F; /* amber — framework */
+  --card-bg: #FFFFFF;
+  --section-bg: #EFECE5;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+.site-header {
+  background: var(--ink);
+  color: var(--cream);
+  padding: 3rem 2rem 2.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.site-header::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 300px; height: 300px;
+  border-radius: 50%;
+  background: rgba(196,75,43,0.15);
+  pointer-events: none;
+}
+.header-inner { max-width: 860px; margin: 0 auto; }
+.header-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: rgba(247,244,238,0.5);
+  margin-bottom: .5rem;
+}
+.header-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  line-height: 1.1;
+  margin-bottom: .75rem;
+}
+.header-title em { font-style: italic; color: #E8927A; }
+.header-sub {
+  font-size: 14px;
+  color: rgba(247,244,238,0.65);
+  max-width: 520px;
+  line-height: 1.6;
+}
+
+/* ── Nav tabs ── */
+.nav-wrap {
+  background: var(--ink);
+  border-top: 1px solid rgba(255,255,255,0.08);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.nav-inner {
+  max-width: 860px;
+  margin: 0 auto;
+  display: flex;
+  gap: 0;
+}
+.nav-btn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: rgba(247,244,238,0.45);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: .04em;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color .2s, border-color .2s;
+  white-space: nowrap;
+}
+.nav-btn:hover { color: rgba(247,244,238,0.8); }
+.nav-btn.active { color: var(--cream); border-bottom-color: var(--accent-1); }
+
+/* ── Progress bar ── */
+.progress-wrap {
+  background: var(--section-bg);
+  border-bottom: 1px solid var(--rule);
+  padding: .75rem 2rem;
+}
+.progress-inner { max-width: 860px; margin: 0 auto; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.prog-label { font-size: 11px; color: var(--ink-muted); font-weight: 500; letter-spacing: .04em; text-transform: uppercase; }
+.prog-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.prog-chip {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--card-bg);
+  color: var(--ink-muted);
+  border: 1px solid var(--rule);
+  transition: background .2s, color .2s;
+}
+.prog-chip.done { background: #E6F4EC; color: #276749; border-color: #A3D4B5; }
+
+/* ── Main content ── */
+.main { max-width: 860px; margin: 0 auto; padding: 2rem 2rem 4rem; }
+
+.section-panel { display: none; }
+.section-panel.active { display: block; }
+
+.section-intro {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--rule);
+}
+.section-intro h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.75rem;
+  margin-bottom: .5rem;
+  color: var(--ink);
+}
+.section-intro p { font-size: 14px; color: var(--ink-soft); max-width: 600px; }
+.score-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: .75rem;
+}
+
+/* ── Group label ── */
+.group-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin: 2rem 0 .75rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.group-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+
+/* ── Cards ── */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  margin-bottom: .65rem;
+  overflow: hidden;
+  transition: box-shadow .2s, border-color .2s;
+}
+.card:hover { border-color: #C0BAB0; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  user-select: none;
+}
+.card-type {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.ct-bone { background: var(--accent-2); }
+.ct-muscle { background: var(--accent-4); }
+.ct-concept { background: var(--accent-3); }
+.ct-clinical { background: var(--accent-1); }
+.ct-framework { background: var(--accent-5); }
+
+.card-title { font-size: 14px; font-weight: 500; color: var(--ink); flex: 1; }
+.badge {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.badge-bone { background: #EBF4FF; color: var(--accent-2); }
+.badge-muscle { background: #F3EEFF; color: var(--accent-4); }
+.badge-concept { background: #E8F5EE; color: var(--accent-3); }
+.badge-clinical { background: #FEF0EC; color: var(--accent-1); }
+.badge-framework { background: #FEFAEC; color: var(--accent-5); }
+
+.chevron {
+  font-size: 10px;
+  color: var(--ink-muted);
+  transition: transform .25s;
+  flex-shrink: 0;
+}
+.chevron.open { transform: rotate(180deg); }
+
+.card-body {
+  display: none;
+  padding: 0 1.25rem 1.25rem;
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.75;
+  border-top: 1px solid var(--rule);
+  padding-top: 1rem;
+}
+.card-body.open { display: block; }
+.card-body strong { font-weight: 500; color: var(--ink); }
+
+.tag {
+  display: inline-block;
+  font-size: 11px;
+  background: var(--section-bg);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 2px 7px;
+  margin: 3px 3px 3px 0;
+  color: var(--ink-soft);
+  vertical-align: middle;
+}
+
+.mem {
+  background: var(--section-bg);
+  border-left: 3px solid var(--accent-4);
+  padding: .65rem 1rem;
+  margin-top: .75rem;
+  font-size: 12px;
+  color: var(--ink);
+  border-radius: 0 4px 4px 0;
+}
+.mem span { color: var(--accent-4); font-weight: 600; }
+
+/* ── Vignettes ── */
+.vignette {
+  background: var(--section-bg);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: .85rem 1rem;
+  margin: .65rem 0;
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.7;
+}
+.vignette-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 6px;
+}
+.answer {
+  margin-top: .5rem;
+  padding: .65rem .9rem;
+  border-left: 3px solid var(--accent-3);
+  background: #F0F9F4;
+  font-size: 13px;
+  color: var(--ink-soft);
+  display: none;
+  border-radius: 0 4px 4px 0;
+}
+.answer.open { display: block; }
+.reveal-btn {
+  font-size: 12px;
+  color: var(--accent-3);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 4px 0;
+  margin-top: 4px;
+  text-decoration: underline;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── Level rows ── */
+.level-row {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 8px;
+  margin: 5px 0;
+  align-items: start;
+}
+.level-num { font-size: 12px; font-weight: 600; color: var(--ink); padding-top: 1px; }
+.level-desc { font-size: 12px; color: var(--ink-soft); line-height: 1.6; }
+
+/* ── Footer ── */
+.site-footer {
+  background: var(--ink);
+  color: rgba(247,244,238,0.4);
+  text-align: center;
+  padding: 2rem;
+  font-size: 12px;
+  margin-top: 4rem;
+}
+.site-footer strong { color: rgba(247,244,238,0.7); font-weight: 500; }
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .site-header { padding: 2rem 1.25rem 1.75rem; }
+  .main { padding: 1.5rem 1.25rem 3rem; }
+  .progress-wrap { padding: .75rem 1.25rem; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-label">Doctor of Physical Therapy · Pre-Course Preparation</div>
+    <h1 class="header-title">PT 725 — <em>Anatomy</em><br>Study Guide</h1>
+    <p class="header-sub">A complete beginner-friendly reference covering all five regions tested in your cadaver-based anatomy course. Open each card, read the memory tricks, and use the quiz buttons to test yourself.</p>
+  </div>
+</header>
+
+<nav class="nav-wrap">
+  <div class="nav-inner">
+    <button class="nav-btn active" onclick="showSection('lower')">Lower Extremity</button>
+    <button class="nav-btn" onclick="showSection('upper')">Upper Extremity</button>
+    <button class="nav-btn" onclick="showSection('back')">Back & Neck</button>
+    <button class="nav-btn" onclick="showSection('thorax')">Thorax & Abdomen</button>
+    <button class="nav-btn" onclick="showSection('clinical')">Clinical Reasoning</button>
+  </div>
+</nav>
+
+<div class="progress-wrap">
+  <div class="progress-inner">
+    <span class="prog-label">Progress</span>
+    <div class="prog-chips" id="progress-chips"></div>
+  </div>
+</div>
+
+<main class="main">
+
+<!-- ═══════════════════════════════════════════════
+     SECTION 1: LOWER EXTREMITY & PELVIS
+════════════════════════════════════════════════ -->
+<div class="section-panel active" id="section-lower">
+  <div class="section-intro">
+    <div class="score-badge" style="background:#E8F5EE;color:#276749;">Diagnostic score: 100% — Confidence builder</div>
+    <h2>Lower Extremity &amp; Pelvis</h2>
+    <p>Bones of the hip and leg, the gluteal and thigh muscles, ankle movers, and gait mechanics. Use this section to reinforce and connect concepts to clinical practice.</p>
+  </div>
+
+  <div class="group-label">Bones &amp; landmarks</div>
+
+  <div class="card" data-section="lower" data-id="0">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-bone"></span>
+      <span class="card-title">The pelvis — your body's foundation</span>
+      <span class="badge badge-bone">Bone</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <strong>What it is:</strong> The ring of bone connecting your spine to your legs. Made of three fused bones on each side — the ilium, ischium, and pubis — which together form the os coxae (hip bone). The two hip bones join at the front (pubic symphysis) and attach to the sacrum at the back (sacroiliac joints).<br><br>
+      <span class="tag">Ilium</span> The big flaring "wing" — the iliac crest is what you feel when you rest your hands on your hips. Key landmark for locating L4.<br>
+      <span class="tag">Ischium</span> The bottom "sit bones." The ischial tuberosity is where the hamstrings attach.<br>
+      <span class="tag">Pubis</span> The front part. The two pubic bones meet at the pubic symphysis.<br><br>
+      <strong>The acetabulum:</strong> Where all three bones meet on the lateral side — the cup-shaped socket of the hip joint.
+      <div class="mem"><span>Memory trick:</span> "I Sit on my Pubis" — Ilium (top), Ischium (bottom), Pubis (front). The acetabulum is where they all converge.</div>
+    </div>
+  </div>
+
+  <div class="card" data-section="lower" data-id="1">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-bone"></span>
+      <span class="card-title">The femur — thigh bone</span>
+      <span class="badge badge-bone">Bone</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <strong>What it is:</strong> The longest, heaviest bone in the body. Runs from the hip to the knee.<br><br>
+      <span class="tag">Femoral head</span> The ball of the hip joint — fits into the acetabulum.<br>
+      <span class="tag">Femoral neck</span> Most common fracture site in elderly falls — "broken hip."<br>
+      <span class="tag">Greater trochanter</span> Outer hip bump — key gluteal muscle attachment. Used as a landmark for hip injections.<br>
+      <span class="tag">Medial &amp; lateral condyles</span> Rounded bumps at the bottom forming the top of the knee joint.<br><br>
+      <strong>Q angle:</strong> The angle the femur makes with the tibia. Wider pelvis → greater Q angle → more knee valgus → higher ACL risk. Women are anatomically at higher risk.
+      <div class="mem"><span>Clinical anchor:</span> "Hip fracture = femoral neck until proven otherwise." The neck is thin and angled — high stress concentration.</div>
+    </div>
+  </div>
+
+  <div class="card" data-section="lower" data-id="2">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-bone"></span>
+      <span class="card-title">Knee & lower leg — tibia, fibula, patella</span>
+      <span class="badge badge-bone">Bone</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <strong>Tibia (shin bone):</strong> The large weight-bearing bone. Its flat top (tibial plateau) forms the bottom of the knee. The tibial tuberosity on the front is where the patellar tendon attaches.<br><br>
+      <strong>Fibula:</strong> The thin lateral bone — bears only ~15% of weight but critical for ankle stability. The lateral malleolus (outer ankle bump) is the bottom of the fibula.<br><br>
+      <strong>Patella (kneecap):</strong> A sesamoid bone embedded in the quadriceps tendon. Acts as a pulley to improve quad mechanical advantage by ~50%. Glides in the femoral trochlear groove.
+      <div class="mem"><span>Memory trick:</span> "Tibia = weight, Fibula = stability." Tibia is medial and massive; fibula is lateral and thin.</div>
+    </div>
+  </div>
+
+  <div class="card" data-section="lower" data-id="3">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-bone"></span>
+      <span class="card-title">Foot & ankle bones</span>
+      <span class="badge badge-bone">Bone</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <span class="tag">Tarsals (7)</span> Back/mid foot. Talus sits on the calcaneus (heel). Ankle joint = talus + tibia + fibula.<br>
+      <span class="tag">Metatarsals (5)</span> Mid-foot long bones. 5th metatarsal base = common fracture site in ankle sprains.<br>
+      <span class="tag">Phalanges (14)</span> Toes — big toe has 2, others have 3.<br><br>
+      <strong>Medial malleolus:</strong> Inner ankle bump — bottom of the tibia. Together with the lateral malleolus (fibula), forms the ankle mortise that grips the talus.
+      <div class="mem"><span>Memory trick:</span> Back = tarsals, mid = metatarsals, front = phalanges. Same pattern as the hand (carpals, metacarpals, phalanges).</div>
+    </div>
+  </div>
+
+  <div class="group-label">Key muscles</div>
+
+  <div class="card" data-section="lower" data-id="4">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-muscle"></span>
+      <span class="card-title">Gluteal muscles — the powerhouse</span>
+      <span class="badge badge-muscle">Muscle</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <strong>Gluteus maximus:</strong> Largest muscle in the body. Primary hip extensor. Powers stair climbing, squatting, and running propulsion. Inferior gluteal nerve (L5–S2).<br><br>
+      <strong>Gluteus medius:</strong> Side of the hip. Primary hip abductor and KEY pelvic stabilizer during walking. Weakness → Trendelenburg sign (pelvis drops on the opposite side). Superior gluteal nerve (L4–S1).<br><br>
+      <strong>Gluteus minimus:</strong> Deep to the medius. Same actions — assists abduction and internal rotation.
+      <div class="mem"><span>Clinical anchor:</span> Weak gluteus medius = Trendelenburg gait. You will assess this in virtually every lower-extremity patient you ever treat.</div>
+    </div>
+  </div>
+
+  <div class="card" data-section="lower" data-id="5">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-muscle"></span>
+      <span class="card-title">Quadriceps — front of the thigh</span>
+      <span class="badge badge-muscle">Muscle</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      Four muscles converging into the quad tendon → patella → patellar tendon → tibial tuberosity.<br><br>
+      <span class="tag">Rectus femoris</span> Crosses hip AND knee — flexes hip, extends knee. Only quad that crosses the hip.<br>
+      <span class="tag">Vastus lateralis</span> Outer thigh. Extends knee.<br>
+      <span class="tag">Vastus medialis</span> Inner thigh. VMO portion critical for patellar tracking.<br>
+      <span class="tag">Vastus intermedius</span> Deep under rectus. Extends knee.<br><br>
+      All innervated by the <strong>femoral nerve (L2–L4)</strong>. Patellar reflex (knee jerk) tests <strong>L4</strong>.
+      <div class="mem"><span>Memory trick:</span> "Really Very Very Important" → Rectus femoris, Vastus lateralis, Vastus medialis, Vastus intermedius.</div>
+    </div>
+  </div>
+
+  <div class="card" data-section="lower" data-id="6">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-muscle"></span>
+      <span class="card-title">Hamstrings — back of the thigh</span>
+      <span class="badge badge-muscle">Muscle</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      Three muscles originating from the ischial tuberosity, all crossing hip and knee.<br><br>
+      <span class="tag">Biceps femoris</span> Outer hamstring. Flexes knee, extends hip, externally rotates leg.<br>
+      <span class="tag">Semimembranosus</span> Inner hamstring — flat. Flexes knee, extends hip, internally rotates.<br>
+      <span class="tag">Semitendinosus</span> Inner hamstring — long tendon. Same as semimembranosus.<br><br>
+      <strong>Innervation:</strong> Sciatic nerve (L5–S2). Most common muscle strain in sport — typically at the proximal ischial attachment. Straight leg raise test stretches both hamstrings and the sciatic nerve.
+      <div class="mem"><span>Memory trick:</span> "2 semis on the inside, biceps on the outside." Biceps femoris is lateral; the two semi- muscles are medial.</div>
+    </div>
+  </div>
+
+  <div class="card" data-section="lower" data-id="7">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-muscle"></span>
+      <span class="card-title">Ankle & foot muscles</span>
+      <span class="badge badge-muscle">Muscle</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <strong>Dorsiflexors (front of leg):</strong><br>
+      <span class="tag">Tibialis anterior</span> Main dorsiflexor + foot invertor. L4 myotome. Weakness = foot drop. Deep fibular nerve.<br><br>
+      <strong>Plantarflexors (back of leg):</strong><br>
+      <span class="tag">Gastrocnemius</span> Two-headed calf. Plantarflexes ankle + assists knee flexion. S1–S2. Achilles reflex tests S1.<br>
+      <span class="tag">Soleus</span> Deep to gastroc — only crosses ankle. Most important for push-off during walking.<br><br>
+      <strong>Evertors:</strong><br>
+      <span class="tag">Fibularis longus &amp; brevis</span> Evert the foot. Injured in lateral ankle sprains. Superficial fibular nerve (L5–S1).
+      <div class="mem"><span>Reflex anchors:</span> Patellar = L4. Achilles = S1. These are the two lower extremity reflexes tested every clinical day.</div>
+    </div>
+  </div>
+
+  <div class="group-label">Clinical connections</div>
+
+  <div class="card" data-section="lower" data-id="8">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-clinical"></span>
+      <span class="card-title">Gait basics — what muscles do what during walking</span>
+      <span class="badge badge-clinical">Clinical</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <strong>Two phases:</strong> Stance (~60%) — foot on ground. Swing (~40%) — foot in air.<br><br>
+      <strong>Key muscle roles by moment:</strong><br>
+      Initial contact (heel strike) → quads brake the knee; tibialis anterior decelerates foot slap.<br>
+      Midstance (single leg) → gluteus medius stabilizes pelvis. This is the Trendelenburg moment.<br>
+      Push-off (toe off) → gastrocnemius/soleus generate forward propulsion.<br>
+      Swing → tibialis anterior lifts foot to clear the ground.
+      <div class="mem"><span>Clinical anchor:</span> "Glutes stabilize, quads brake, soleus pushes, tib ant lifts." These four jobs cover 90% of gait analysis conversations.</div>
+    </div>
+  </div>
+
+  <div class="card" data-section="lower" data-id="9">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-clinical"></span>
+      <span class="card-title">Common lower extremity injuries</span>
+      <span class="badge badge-clinical">Clinical</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <span class="tag">ACL tear</span> Anterior cruciate ligament — resists forward tibial sliding. Pivoting sports. Tested with Lachman test.<br><br>
+      <span class="tag">Lateral ankle sprain</span> Most common musculoskeletal injury overall. Inversion → tears anterior talofibular ligament (ATFL) first.<br><br>
+      <span class="tag">Femoral neck fracture</span> "Broken hip" in the elderly. High mortality. Osteoporosis is a major risk factor.<br><br>
+      <span class="tag">IT band syndrome</span> Iliotibial band rubs over the lateral femoral epicondyle. Common in runners. Caused by weak hip abductors.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SECTION 2: UPPER EXTREMITY
+════════════════════════════════════════════════ -->
+<div class="section-panel" id="section-upper">
+  <div class="section-intro">
+    <div class="score-badge" style="background:#FEF0EC;color:#C44B2B;">Diagnostic score: 50% — Priority focus area</div>
+    <h2>Upper Extremity</h2>
+    <p>Shoulder girdle bones, the rotator cuff, brachial plexus terminal branches, and common arm/hand injuries. Pay extra attention to the brachial plexus and SITS muscles.</p>
+  </div>
+
+  <div class="group-label">Bones &amp; landmarks</div>
+
+  <div class="card" data-section="upper" data-id="0">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-bone"></span>
+      <span class="card-title">Shoulder girdle — clavicle &amp; scapula</span>
+      <span class="badge badge-bone">Bone</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <strong>Clavicle (collarbone):</strong> The only bony connection between the arm and the axial skeleton. Acts as a strut. Most commonly fractured bone from a fall on an outstretched hand (FOOSH).<br><br>
+      <strong>Scapula (shoulder blade):</strong> Flat triangular bone floating on the ribcage, held only by muscles.<br>
+      <span class="tag">Acromion</span> Tip of the scapular spine — forms the roof of the shoulder. Supraspinatus passes beneath it. Narrowing → impingement.<br>
+      <span class="tag">Glenoid</span> Shallow socket that receives the humeral head — the "cup" of the shoulder joint.<br>
+      <span class="tag">Coracoid process</span> Beak-shaped projection on the front — attachment for several muscles and ligaments.
+      <div class="mem"><span>Memory trick:</span> Clavicle comes from Latin clavis = key. It "unlocks" arm movement relative to the trunk.</div>
+    </div>
+  </div>
+
+  <div class="card" data-section="upper" data-id="1">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-bone"></span>
+      <span class="card-title">Humerus, radius &amp; ulna</span>
+      <span class="badge badge-bone">Bone</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <strong>Humerus (upper arm):</strong><br>
+      <span class="tag">Surgical neck</span> Most common fracture site. Axillary nerve wraps around here — fracture can damage it.<br>
+      <span class="tag">Greater &amp; lesser tubercles</span> Where rotator cuff muscles attach.<br>
+      <span class="tag">Lateral epicondyle</span> Outer elbow — wrist extensor attachment. Overuse → "tennis elbow."<br>
+      <span class="tag">Medial epicondyle</span> Inner elbow — wrist flexor attachment. Ulnar nerve passes behind it — "funny bone."<br><br>
+      <strong>Radius:</strong> Thumb side of forearm. Distal radius fracture = Colles fracture from FOOSH.<br>
+      <strong>Ulna:</strong> Pinky side. Has the olecranon = the point of the elbow.
+      <div class="mem"><span>Memory trick:</span> "Radius = thumb side." R for Radius, R for Right-thumb side in anatomical position.</div>
+    </div>
+  </div>
+
+  <div class="card" data-section="upper" data-id="2">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-bone"></span>
+      <span class="card-title">Hand &amp; wrist bones</span>
+      <span class="badge badge-bone">Bone</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <span class="tag">Carpals (8)</span> Wrist bones in two rows. Scaphoid most commonly fractured — can lose blood supply if missed.<br>
+      <span class="tag">Metacarpals (5)</span> Palm bones 1–5. Boxer's fracture = 5th metacarpal neck.<br>
+      <span class="tag">Phalanges (14)</span> Thumb has 2; fingers have 3 each (proximal, middle, distal).<br><br>
+      <strong>Carpal tunnel:</strong> U-shaped canal formed by carpal bones, bridged by the transverse carpal ligament. Contains 9 tendons + the median nerve. Compression → carpal tunnel syndrome (numbness in thumb, index, middle fingers).
+      <div class="mem"><span>Carpal bones:</span> "Some Lovers Try Positions That They Can't Handle" → Scaphoid, Lunate, Triquetrum, Pisiform, Trapezium, Trapezoid, Capitate, Hamate.</div>
+    </div>
+  </div>
+
+  <div class="group-label">Key muscles</div>
+
+  <div class="card" data-section="upper" data-id="3">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-muscle"></span>
+      <span class="card-title">Rotator cuff — the SITS muscles</span>
+      <span class="badge badge-muscle">Muscle</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <strong>Group function:</strong> Compress the humeral head into the glenoid (stabilization) and rotate the arm. Without them the shoulder dislocates easily — the glenoid is like a golf ball on a tee.<br><br>
+      <span class="tag">Supraspinatus</span> Above the scapular spine. Initiates first 15–30° of abduction. Most commonly torn. Suprascapular nerve (C5–C6).<br>
+      <span class="tag">Infraspinatus</span> Below the scapular spine. External rotation. Suprascapular nerve (C5–C6).<br>
+      <span class="tag">Teres minor</span> Beside infraspinatus. External rotation. Axillary nerve (C5–C6).<br>
+      <span class="tag">Subscapularis</span> Front of scapula. Internal rotation. Subscapular nerves (C5–C7). The only one on the front.
+      <div class="mem"><span>Memory trick:</span> "SITS" — Supraspinatus, Infraspinatus, Teres minor, Subscapularis. Subscapularis is the odd one out — it lives on the front of the scapula.</div>
+    </div>
+  </div>
+
+  <div class="card" data-section="upper" data-id="4">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-muscle"></span>
+      <span class="card-title">Deltoid &amp; major shoulder movers</span>
+      <span class="badge badge-muscle">Muscle</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <strong>Deltoid:</strong> Three parts — Anterior (flexion, internal rotation), Middle (abduction above 30°), Posterior (extension, external rotation). All innervated by the axillary nerve (C5–C6).<br><br>
+      <strong>Pectoralis major:</strong> Large chest muscle. Adducts and internally rotates. Medial and lateral pectoral nerves (C5–T1).<br><br>
+      <strong>Latissimus dorsi:</strong> The big "lats." Extends, adducts, internally rotates. Thoracodorsal nerve (C6–C8). Key for crutch walking and transfers.
+      <div class="mem"><span>Clinical anchor:</span> Axillary nerve = deltoid + teres minor. It wraps around the surgical neck of the humerus — why shoulder dislocations must be assessed for nerve injury.</div>
+    </div>
+  </div>
+
+  <div class="card" data-section="upper" data-id="5">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-muscle"></span>
+      <span class="card-title">Biceps, triceps &amp; forearm muscles</span>
+      <span class="badge badge-muscle">Muscle</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <strong>Biceps brachii:</strong> Flexes elbow AND supinates (turns palm up). Musculocutaneous nerve (C5–C6). Biceps reflex = C5–C6.<br><br>
+      <strong>Triceps brachii:</strong> The only elbow extensor. Radial nerve (C7). Triceps reflex = C7.<br><br>
+      <strong>Forearm flexors (anterior):</strong> Flex wrist and fingers. Mostly median nerve + some ulnar.<br><br>
+      <strong>Forearm extensors (posterior):</strong> All radial nerve. Radial nerve injury → wrist drop.
+      <div class="mem"><span>Reflex anchors:</span> Biceps = C5. Brachioradialis = C6. Triceps = C7. Count up: 5, 6, 7.</div>
+    </div>
+  </div>
+
+  <div class="group-label">Key concept</div>
+
+  <div class="card" data-section="upper" data-id="6">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-concept"></span>
+      <span class="card-title">The brachial plexus — a beginner's map</span>
+      <span class="badge badge-concept">Concept</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <strong>What it is:</strong> The nerve network from C5–T1 supplying the entire arm. Spinal levels come in, rearrange, and five terminal nerves come out.<br><br>
+      <span class="tag">Musculocutaneous</span> Biceps, coracobrachialis, lateral forearm sensation.<br>
+      <span class="tag">Axillary</span> Deltoid, teres minor, lateral upper arm sensation.<br>
+      <span class="tag">Radial</span> Triceps + all wrist/finger extensors. Injury = wrist drop.<br>
+      <span class="tag">Median</span> Most forearm flexors + thenar hand muscles. Carpal tunnel = median nerve compression.<br>
+      <span class="tag">Ulnar</span> Intrinsic hand muscles + ring/pinky sensation. Injury = claw hand.
+      <div class="mem"><span>Memory trick:</span> "My Aunt Rides Many Unicycles" → Musculocutaneous, Axillary, Radial, Median, Ulnar.</div>
+    </div>
+  </div>
+
+  <div class="card" data-section="upper" data-id="7">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-clinical"></span>
+      <span class="card-title">Common upper extremity injuries</span>
+      <span class="badge badge-clinical">Clinical</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <span class="tag">Rotator cuff tear</span> Supraspinatus most common. Painful arc 60–120°. PT is first-line before surgery.<br>
+      <span class="tag">Shoulder impingement</span> Supraspinatus compressed under the acromion. Overhead activities. Weak rotator cuff + poor scapular control.<br>
+      <span class="tag">Tennis elbow</span> Wrist extensor overuse at the lateral epicondyle. Pain with gripping.<br>
+      <span class="tag">Carpal tunnel syndrome</span> Median nerve compression. Thumb/index/middle finger numbness. Worse at night. Phalen's and Tinel's tests.<br>
+      <span class="tag">FOOSH injuries</span> Fall on outstretched hand → clavicle fracture, scaphoid fracture, Colles fracture. Know all three.
+      <div class="mem"><span>Clinical anchor:</span> "FOOSH" — one of the most documented injury mechanisms in PT. Three main fractures: clavicle, scaphoid, distal radius.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SECTION 3: BACK & NECK
+════════════════════════════════════════════════ -->
+<div class="section-panel" id="section-back">
+  <div class="section-intro">
+    <div class="score-badge" style="background:#FEFAEC;color:#B7791F;">Diagnostic score: 75% — Review and reinforce</div>
+    <h2>Back &amp; Neck</h2>
+    <p>Vertebral regions, disc anatomy, spinal nerve roots, deep paraspinal muscles, and radiculopathy patterns. The myotome and disc cards are highest priority.</p>
+  </div>
+
+  <div class="group-label">Spinal structure</div>
+
+  <div class="card" data-section="back" data-id="0">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-bone"></span>
+      <span class="card-title">The vertebral column — regions &amp; numbers</span>
+      <span class="badge badge-bone">Bone</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <span class="tag">Cervical (C1–C7)</span> 7 vertebrae. The neck. Most mobile. C1 (atlas) holds the skull; C2 (axis) allows rotation.<br>
+      <span class="tag">Thoracic (T1–T12)</span> 12 vertebrae. Mid-back. Ribs attach here. Limited motion due to rib cage.<br>
+      <span class="tag">Lumbar (L1–L5)</span> 5 vertebrae. Lower back. Largest — bear most weight. Most common disc herniation site.<br>
+      <span class="tag">Sacral (S1–S5)</span> 5 fused segments forming the sacrum. Connects spine to pelvis at the sacroiliac joints.<br>
+      <span class="tag">Coccygeal</span> The tailbone. 3–4 fused segments. Can fracture from a fall onto the buttocks.<br><br>
+      Total = 33 vertebrae; 26 moveable segments in adults (sacral and coccygeal are fused).
+      <div class="mem"><span>Memory trick:</span> "Breakfast at 7, Lunch at 12, Dinner at 5" → Cervical=7, Thoracic=12, Lumbar=5.</div>
+    </div>
+  </div>
+
+  <div class="card" data-section="back" data-id="1">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-bone"></span>
+      <span class="card-title">Anatomy of a single vertebra</span>
+      <span class="badge badge-bone">Bone</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <span class="tag">Vertebral body</span> Drum-shaped front portion — the weight-bearing part. Stacked like coins, separated by discs.<br>
+      <span class="tag">Spinous process</span> The bony spike you feel running down your back.<br>
+      <span class="tag">Transverse processes</span> Two wings pointing sideways — muscle attachment and rib articulation in thoracic region.<br>
+      <span class="tag">Facet joints</span> Small flat joints between adjacent vertebrae — orientation determines motion available at each level.<br>
+      <span class="tag">Pedicles</span> Short pillars connecting arch to body. Between adjacent pedicles is the intervertebral foramen — where spinal nerves exit.
+      <div class="mem"><span>Clinical anchor:</span> The intervertebral foramen is where disc herniations and bone spurs compress spinal nerves, causing the radiating pain PTs assess constantly.</div>
+    </div>
+  </div>
+
+  <div class="card" data-section="back" data-id="2">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-concept"></span>
+      <span class="card-title">Intervertebral discs</span>
+      <span class="badge badge-concept">Concept</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <strong>What they are:</strong> Cartilaginous shock absorbers between each vertebral body — about 25% of spinal height. You are literally taller in the morning (discs rehydrate overnight).<br><br>
+      <span class="tag">Nucleus pulposus</span> Soft gel-like inner core. Absorbs compressive load. Like jelly donut filling.<br>
+      <span class="tag">Annulus fibrosus</span> Tough outer ring of fibrous layers. Resists rotation and bending forces. Like the donut wall.<br><br>
+      <strong>Disc herniation:</strong> Nucleus pushes through annulus crack → presses on nerve root → radiculopathy. Most common at L4–L5 and L5–S1 (lumbar), C5–C6 (cervical).
+      <div class="mem"><span>Memory trick:</span> "Jelly donut" — nucleus = jelly, annulus = dough. Herniation = jelly squirting out when you squeeze the donut, pressing on the nearby nerve.</div>
+    </div>
+  </div>
+
+  <div class="group-label">Nerve roots &amp; myotomes</div>
+
+  <div class="card" data-section="back" data-id="3">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-concept"></span>
+      <span class="card-title">Spinal nerve roots &amp; key myotomes</span>
+      <span class="badge badge-concept">Concept</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      Each spinal level sends a nerve to a specific body region. <strong>Myotomes</strong> = muscles controlled by that level. <strong>Dermatomes</strong> = skin sensation supplied by that level.<br><br>
+      <strong>Key myotomes:</strong>
+      <div class="level-row"><span class="level-num">C5</span><span class="level-desc">Shoulder abduction (deltoid)</span></div>
+      <div class="level-row"><span class="level-num">C6</span><span class="level-desc">Elbow flexion (biceps), wrist extension</span></div>
+      <div class="level-row"><span class="level-num">C7</span><span class="level-desc">Elbow extension (triceps), wrist flexion</span></div>
+      <div class="level-row"><span class="level-num">L4</span><span class="level-desc">Knee extension (quads), ankle dorsiflexion — patellar reflex</span></div>
+      <div class="level-row"><span class="level-num">L5</span><span class="level-desc">Great toe extension — no reliable reflex</span></div>
+      <div class="level-row"><span class="level-num">S1</span><span class="level-desc">Ankle plantarflexion (calf) — Achilles reflex</span></div>
+      <div class="mem"><span>Clinical anchor:</span> "No L5 reflex" — L5 has no deep tendon reflex. Knowing this prevents misdiagnosing L5 involvement as a reflex-present finding.</div>
+    </div>
+  </div>
+
+  <div class="group-label">Back muscles</div>
+
+  <div class="card" data-section="back" data-id="4">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-muscle"></span>
+      <span class="card-title">Superficial back muscles — the movers</span>
+      <span class="badge badge-muscle">Muscle</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <span class="tag">Trapezius</span> Diamond-shaped upper back + neck. Upper = elevates shoulder. Middle = retracts scapula. Lower = depresses scapula. CN XI + C3–C4.<br><br>
+      <span class="tag">Latissimus dorsi</span> Lower back. Arm extension, adduction, internal rotation. Thoracodorsal nerve. Key for crutch walking.<br><br>
+      <span class="tag">Rhomboids</span> Between scapula and spine. Retract and elevate the scapula. Dorsal scapular nerve (C4–C5). Weakness → rounded shoulders.<br><br>
+      <span class="tag">Serratus anterior</span> Protracts and upwardly rotates scapula for overhead reaching. Long thoracic nerve (C5–C7). Weakness → winged scapula.
+      <div class="mem"><span>Clinical anchor:</span> Weak lower trap + weak serratus anterior = most common cause of shoulder impingement. You'll treat this constantly.</div>
+    </div>
+  </div>
+
+  <div class="card" data-section="back" data-id="5">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-muscle"></span>
+      <span class="card-title">Deep back muscles — the stabilizers</span>
+      <span class="badge badge-muscle">Muscle</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      All innervated by dorsal rami of spinal nerves.<br><br>
+      <span class="tag">Erector spinae</span> The large column you feel on either side of the spine. Three groups (iliocostalis, longissimus, spinalis). Extends the spine and resists forward bending. Most worked muscle during lifting.<br><br>
+      <span class="tag">Multifidus</span> Deep to erector spinae. Short segments spanning 2–4 vertebrae. Provides fine-tuned segmental stability rather than gross motion. Atrophies quickly with back pain — primary rehab target in low back pain.<br><br>
+      <span class="tag">Rotatores</span> Deepest and shortest — span 1–2 levels. Function more as proprioceptors (position sensors) than movers.
+      <div class="mem"><span>Clinical anchor:</span> Multifidus is arguably the most important muscle in all of musculoskeletal PT. Retraining it after a back injury is a cornerstone of low back pain rehab.</div>
+    </div>
+  </div>
+
+  <div class="group-label">Clinical connections</div>
+
+  <div class="card" data-section="back" data-id="6">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-clinical"></span>
+      <span class="card-title">Radiculopathy — pinched nerve basics</span>
+      <span class="badge badge-clinical">Clinical</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <strong>What it means:</strong> Irritation or compression of a nerve root as it exits the spine — from a herniated disc, bone spur, or narrowed foramen.<br><br>
+      <strong>Pattern of symptoms:</strong> Pain, numbness, or weakness that follows a specific dermatome/myotome pattern down the arm or leg. Not just local back/neck pain — symptoms travel.<br><br>
+      <span class="tag">Sciatica</span> L4, L5, or S1 compression → pain running down the back of the leg. Positive straight leg raise test.<br>
+      <span class="tag">Cervical radiculopathy</span> C5–C7 most common → pain/numbness into the arm. Positive Spurling's test.
+      <div class="mem"><span>Clinical anchor:</span> "Pain that travels in a stripe down the limb = think nerve root. Pain that is local and diffuse = think muscle or joint." First sorting rule for back/neck pain.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SECTION 4: THORAX & ABDOMEN
+════════════════════════════════════════════════ -->
+<div class="section-panel" id="section-thorax">
+  <div class="section-intro">
+    <div class="score-badge" style="background:#FEF0EC;color:#C44B2B;">Diagnostic score: 0% — Start here</div>
+    <h2>Thorax &amp; Abdomen</h2>
+    <p>The ribcage, sternum, diaphragm, intercostals, abdominal wall, and cardiovascular basics. The diaphragm card is your single most important read in this section.</p>
+  </div>
+
+  <div class="group-label">Bones &amp; landmarks</div>
+
+  <div class="card" data-section="thorax" data-id="0">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-bone"></span>
+      <span class="card-title">The ribcage (thoracic cage)</span>
+      <span class="badge badge-bone">Bone</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <strong>Made of:</strong> 12 pairs of ribs + 12 thoracic vertebrae (T1–T12) + the sternum. Protects heart and lungs.<br><br>
+      <span class="tag">True ribs (1–7)</span> Connect directly to the sternum via their own cartilage.<br>
+      <span class="tag">False ribs (8–10)</span> Connect to the cartilage of rib 7, not directly to the sternum.<br>
+      <span class="tag">Floating ribs (11–12)</span> Don't connect to the sternum at all. Most vulnerable to fracture.<br><br>
+      <strong>PT relevance:</strong> Rib fractures are extremely painful because the intercostals are constantly moving with every breath. Even a small fracture can significantly limit breathing.
+      <div class="mem"><span>Memory trick:</span> "7 True, 3 False, 2 Floating" — 7+3+2 = 12 pairs total.</div>
+    </div>
+  </div>
+
+  <div class="card" data-section="thorax" data-id="1">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-bone"></span>
+      <span class="card-title">The sternum</span>
+      <span class="badge badge-bone">Bone</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      The flat breastbone running down the center of the chest. Three parts:<br><br>
+      <span class="tag">Manubrium</span> Top — where the clavicles and first two ribs attach.<br>
+      <span class="tag">Body</span> Middle — where ribs 3–7 attach.<br>
+      <span class="tag">Xiphoid process</span> Bottom tip — CPR hand placement landmark and diaphragm attachment site.<br><br>
+      <strong>Sternal angle (angle of Louis):</strong> The ridge where manubrium meets body. Marks where the trachea splits into two bronchi, and the level of T4/T5. One of the most important landmarks in the whole body.
+      <div class="mem"><span>Memory trick:</span> "MBX" — Manubrium, Body, Xiphoid. Top to bottom.</div>
+    </div>
+  </div>
+
+  <div class="group-label">Key muscles — breathing &amp; trunk</div>
+
+  <div class="card" data-section="thorax" data-id="2">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-muscle"></span>
+      <span class="card-title">The diaphragm — the #1 breathing muscle</span>
+      <span class="badge badge-muscle">Muscle</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <strong>What it looks like:</strong> A dome-shaped muscle (like a parachute or upside-down bowl) separating the chest from the abdomen.<br><br>
+      <strong>Attachments:</strong> Around the rim — xiphoid process, lower ribs 6–12, and lumbar vertebrae L1–L3 via the crura.<br><br>
+      <strong>Breathing mechanics:</strong><br>
+      <span class="tag">Inhale</span> Diaphragm contracts → dome flattens downward → chest volume increases → pressure drops → air rushes IN.<br>
+      <span class="tag">Quiet exhale</span> Diaphragm relaxes → dome rises → chest volume decreases → air flows OUT. Passive — no muscle effort needed.<br><br>
+      <strong>Three openings (hiatus):</strong><br>
+      <span class="tag">T8</span> Inferior vena cava passes through.<br>
+      <span class="tag">T10</span> Esophagus + vagus nerve. Site of hiatal hernias.<br>
+      <span class="tag">T12</span> Aorta passes through.<br>
+      <strong>Nerve supply:</strong> Phrenic nerve (C3–C5).
+      <div class="mem"><span>Memory trick:</span> "I 8 (T8) 10 eggs (T10 esophagus) At 12 (T12 aorta)." Also: "C3, 4, 5 keeps the diaphragm alive" — the phrenic nerve levels.</div>
+    </div>
+  </div>
+
+  <div class="card" data-section="thorax" data-id="3">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-muscle"></span>
+      <span class="card-title">Intercostal muscles</span>
+      <span class="badge badge-muscle">Muscle</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      Three layers of muscle filling the spaces between each pair of ribs — like webbing between the ribs.<br><br>
+      <span class="tag">External intercostals</span> Outermost. Fibers run downward-forward (hands in pockets). RAISE ribs during inhalation — assist the diaphragm.<br>
+      <span class="tag">Internal intercostals</span> Middle layer. Fibers run perpendicular to external. LOWER ribs during forced exhalation (coughing, blowing).<br>
+      <span class="tag">Innermost intercostals</span> Deepest. Similar to internal — also forced exhalation.<br><br>
+      <strong>Clinical note:</strong> Rib fracture pain with every breath is caused by constant intercostal movement — why rib fractures are sometimes more limiting than they appear on imaging.
+      <div class="mem"><span>Memory trick:</span> External = inhalation (E = air in). Internal = expIratIon (both have double "I" sounds).</div>
+    </div>
+  </div>
+
+  <div class="card" data-section="thorax" data-id="4">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-muscle"></span>
+      <span class="card-title">Abdominal muscles — the four layers</span>
+      <span class="badge badge-muscle">Muscle</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      No bony protection in front, so four overlapping muscle layers in different directions create strength from every angle — like plywood.<br><br>
+      <span class="tag">Rectus abdominis</span> The "six-pack" — runs vertically down the center. Flexes the trunk. Separated by the linea alba (fibrous midline seam).<br>
+      <span class="tag">External oblique</span> Outermost diagonal. Fibers run downward-inward (hands in pockets). Rotates trunk to the OPPOSITE side.<br>
+      <span class="tag">Internal oblique</span> Middle diagonal. Fibers run upward-inward. Rotates trunk to the SAME side.<br>
+      <span class="tag">Transverse abdominis (TrA)</span> Deepest — fibers run horizontally like a corset. Does NOT produce movement. KEY muscle for spinal stabilization. Commonly weak in low back pain.
+      <div class="mem"><span>Memory trick:</span> "REIT" — Rectus, External, Internal, Transverse. Superficial to deep.</div>
+    </div>
+  </div>
+
+  <div class="group-label">Cardiovascular basics</div>
+
+  <div class="card" data-section="thorax" data-id="5">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-concept"></span>
+      <span class="card-title">The heart — four chambers, two circuits</span>
+      <span class="badge badge-concept">Concept</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <strong>Pulmonary circuit:</strong> Right side of heart → lungs → left side. Picks up O₂, drops off CO₂.<br>
+      <strong>Systemic circuit:</strong> Left side → entire body → right side. Delivers O₂ to all tissues.<br><br>
+      <strong>The path of blood (memorize this):</strong><br>
+      Body → Superior/Inferior Vena Cava → Right Atrium → (tricuspid valve) → Right Ventricle → (pulmonary valve) → Pulmonary Artery → Lungs → Pulmonary Veins → Left Atrium → (mitral valve) → Left Ventricle → (aortic valve) → Aorta → Body<br><br>
+      <strong>Classic exam trap:</strong> The pulmonary ARTERY carries DEoxygenated blood. The pulmonary VEINS carry oxygenated blood. Opposite of every other vessel in the body.
+      <div class="mem"><span>Memory trick:</span> "Arteries Away from the heart, Veins return" — true for pulmonary vessels too. The oxygen status is just counterintuitive.</div>
+    </div>
+  </div>
+
+  <div class="card" data-section="thorax" data-id="6">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-concept"></span>
+      <span class="card-title">Major vessels of the thorax</span>
+      <span class="badge badge-concept">Concept</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <strong>Aortic arch branches (3, in order):</strong><br>
+      <span class="tag">Brachiocephalic trunk</span> First — splits into right subclavian (arm) and right common carotid (head/neck).<br>
+      <span class="tag">Left common carotid</span> Second — left side of neck and head.<br>
+      <span class="tag">Left subclavian</span> Third — left arm.<br><br>
+      <strong>The venae cavae (return blood to right atrium):</strong><br>
+      <span class="tag">Superior vena cava (SVC)</span> Drains everything above the diaphragm — head, neck, arms.<br>
+      <span class="tag">Inferior vena cava (IVC)</span> Drains everything below — abdomen, pelvis, legs.
+      <div class="mem"><span>Aortic arch branches:</span> "Big Leagues, Carry Score" → Brachiocephalic, Left Carotid, Left Subclavian.</div>
+    </div>
+  </div>
+
+  <div class="group-label">Clinical connections</div>
+
+  <div class="card" data-section="thorax" data-id="7">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-clinical"></span>
+      <span class="card-title">Breathing mechanics — what changes with injury</span>
+      <span class="badge badge-clinical">Clinical</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <strong>Quiet breathing:</strong> Almost entirely the diaphragm. Chest barely moves.<br>
+      <strong>Deep breathing/exercise:</strong> Diaphragm + external intercostals + scalenes + sternocleidomastoid (neck muscles kick in).<br>
+      <strong>Forced exhalation (coughing/sneezing):</strong> Internal intercostals + abdominals squeeze to force air out fast.<br><br>
+      <strong>Diaphragm paralysis</strong> (e.g. high cervical SCI at C3–C5): primary breathing muscle lost → ventilator required.<br><br>
+      <strong>Diaphragmatic breathing in PT:</strong> Teaching patients to breathe "into the belly" is one of the most common interventions in pulmonary rehab and pain management.
+      <div class="mem"><span>Clinical anchor:</span> "C3, 4, 5 keeps the diaphragm alive." Phrenic nerve = C3–C5.</div>
+    </div>
+  </div>
+
+  <div class="card" data-section="thorax" data-id="8">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-clinical"></span>
+      <span class="card-title">Referred pain — why heart attacks feel like arm pain</span>
+      <span class="badge badge-clinical">Clinical</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <strong>Referred pain:</strong> Pain felt in a location that is NOT where the actual problem is. The brain gets confused because nerves from different regions share the same spinal pathways.<br><br>
+      <strong>Heart → Left arm/jaw:</strong> The heart shares nerve pathways with the left arm (T1–T4 dermatomes). Heart muscle pain refers to the arm or jaw, not just the chest.<br><br>
+      <strong>Diaphragm → Shoulder tip:</strong> Phrenic nerve (C3–C5). Diaphragm irritation (blood, infection) refers pain to the shoulder tip — called Kehr's sign. Can indicate ruptured spleen or liver injury.<br><br>
+      <strong>Why this matters in PT:</strong> Patients who come in for "shoulder pain" may have thoracic or visceral causes. Learning to screen for red flags is a core DPT competency.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SECTION 5: CLINICAL REASONING
+════════════════════════════════════════════════ -->
+<div class="section-panel" id="section-clinical">
+  <div class="section-intro">
+    <div class="score-badge" style="background:#FEFAEC;color:#B7791F;">Diagnostic score: 75% — Review and reinforce</div>
+    <h2>Clinical Reasoning</h2>
+    <p>How PTs think: the 5-question framework, dermatomes, deep tendon reflexes, classic nerve injury patterns, and practice vignettes with hidden answers.</p>
+  </div>
+
+  <div class="group-label">The framework</div>
+
+  <div class="card" data-section="clinical" data-id="0">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-framework"></span>
+      <span class="card-title">How PTs think — the 5-question framework</span>
+      <span class="badge badge-framework">Framework</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      Every patient presentation, run these five questions in order:<br><br>
+      <span class="tag">1. What region?</span> Spine, joint, muscle, nerve — where in the body?<br>
+      <span class="tag">2. What structure?</span> Bone, disc, ligament, tendon, nerve root, peripheral nerve, muscle?<br>
+      <span class="tag">3. What level?</span> Which spinal level (C5? L4? S1)? Use myotomes and dermatomes to localize.<br>
+      <span class="tag">4. What deficit?</span> What function is lost? Strength, sensation, reflex, range of motion?<br>
+      <span class="tag">5. What mechanism?</span> How did it happen? Trauma, overuse, postural, disease?<br><br>
+      Every clinical vignette in your career is just filling in these five blanks.
+      <div class="mem"><span>Anchor phrase:</span> "Region → Structure → Level → Deficit → Mechanism." Say it until it's automatic.</div>
+    </div>
+  </div>
+
+  <div class="card" data-section="clinical" data-id="1">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-concept"></span>
+      <span class="card-title">Dermatomes — pain maps of the body</span>
+      <span class="badge badge-concept">Concept</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      A dermatome is a strip of skin supplied by a single spinal nerve root. Nerve root compression → sensory changes (numbness, tingling, burning) follow that dermatome pattern.<br><br>
+      <strong>Key dermatomes to know:</strong><br>
+      <div class="level-row"><span class="level-num">C6</span><span class="level-desc">Thumb and index finger</span></div>
+      <div class="level-row"><span class="level-num">C7</span><span class="level-desc">Middle finger</span></div>
+      <div class="level-row"><span class="level-num">C8</span><span class="level-desc">Ring and pinky finger</span></div>
+      <div class="level-row"><span class="level-num">L4</span><span class="level-desc">Medial lower leg and big toe (inner)</span></div>
+      <div class="level-row"><span class="level-num">L5</span><span class="level-desc">Dorsum (top) of the foot</span></div>
+      <div class="level-row"><span class="level-num">S1</span><span class="level-desc">Lateral foot and sole</span></div>
+      <div class="mem"><span>Memory trick:</span> "C6 = thumb (6 looks like a thumb). C7 = middle (tallest finger = tallest cervical). C8 = pinky (last finger, last cervical)."</div>
+    </div>
+  </div>
+
+  <div class="card" data-section="clinical" data-id="2">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-concept"></span>
+      <span class="card-title">Deep tendon reflexes — your neurological speedometer</span>
+      <span class="badge badge-concept">Concept</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      Reflexes test the integrity of the reflex arc at a specific spinal level. Fast, objective, requires no patient cooperation.<br><br>
+      <span class="tag">Biceps reflex</span> Tap biceps tendon → elbow flexes. Tests C5–C6.<br>
+      <span class="tag">Brachioradialis reflex</span> Tap brachioradialis → forearm flexes. Tests C6.<br>
+      <span class="tag">Triceps reflex</span> Tap triceps tendon → elbow extends. Tests C7.<br>
+      <span class="tag">Patellar reflex</span> Tap patellar tendon → knee extends. Tests L4.<br>
+      <span class="tag">Achilles reflex</span> Tap Achilles tendon → foot plantarflexes. Tests S1.<br>
+      <span class="tag">L5 — no reflex</span> L5 has no reliable deep tendon reflex. High-yield clinical fact.<br><br>
+      <strong>Interpreting:</strong> Diminished = lower motor neuron/nerve root. Exaggerated = upper motor neuron (brain/cord). Absent = significant nerve damage.
+      <div class="mem"><span>Reflex levels:</span> "5, 6, 7 up top (biceps, brachioradialis, triceps) — 4, nothing, 1 down below (patellar, L5 has none, Achilles)."</div>
+    </div>
+  </div>
+
+  <div class="group-label">Classic nerve injury patterns</div>
+
+  <div class="card" data-section="clinical" data-id="3">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-clinical"></span>
+      <span class="card-title">The five headline nerve injury presentations</span>
+      <span class="badge badge-clinical">Clinical</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <span class="tag">Wrist drop</span> Radial nerve (C7). Cannot extend the wrist. Compressed in the radial groove ("Saturday night palsy").<br><br>
+      <span class="tag">Foot drop</span> Common fibular nerve or L4/L5 root. Cannot dorsiflect the foot. Causes steppage gait (high stepping to clear the toes).<br><br>
+      <span class="tag">Claw hand</span> Ulnar nerve. Ring and pinky fingers claw. Loss of intrinsic hand muscles.<br><br>
+      <span class="tag">Trendelenburg gait</span> Superior gluteal nerve / gluteus medius weakness. Pelvis drops to the opposite side during single-leg stance.<br><br>
+      <span class="tag">Winged scapula</span> Long thoracic nerve / serratus anterior weakness. Scapula wings away from the ribcage when pushing against a wall.
+      <div class="mem"><span>Pattern anchor:</span> "Wrist drop = radial. Foot drop = fibular/L4–L5. Claw = ulnar. Winging = long thoracic. Trendelenburg = superior gluteal."</div>
+    </div>
+  </div>
+
+  <div class="group-label">Practice vignettes</div>
+
+  <div class="card" data-section="clinical" data-id="4">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-clinical"></span>
+      <span class="card-title">Vignette 1 — the construction worker</span>
+      <span class="badge badge-clinical">Clinical</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <div class="vignette">
+        <div class="vignette-label">Patient presentation</div>
+        A 45-year-old construction worker reports that after carrying heavy loads on his shoulder all day, his right arm feels weak. He cannot raise his arm past 20° and the outside of his upper arm is numb. His deltoid appears smaller than the left side.
+      </div>
+      <strong>Questions:</strong> Which nerve is likely injured? Which muscle is affected? Why is the upper arm numb?<br>
+      <button class="reveal-btn" onclick="event.stopPropagation();document.getElementById('a1').classList.toggle('open')">Reveal answer ▾</button>
+      <div class="answer" id="a1"><strong>Axillary nerve (C5–C6)</strong> injury — compressed at the surgical neck of the humerus from the heavy load. The axillary nerve innervates the deltoid (arm abduction) and teres minor, and provides sensation to the lateral upper arm ("regimental badge" area). Deltoid atrophy develops with chronic injury.</div>
+    </div>
+  </div>
+
+  <div class="card" data-section="clinical" data-id="5">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-clinical"></span>
+      <span class="card-title">Vignette 2 — the runner with knee pain</span>
+      <span class="badge badge-clinical">Clinical</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <div class="vignette">
+        <div class="vignette-label">Patient presentation</div>
+        A 28-year-old marathon runner has lateral knee pain starting at mile 8 of long runs. Sharp, worse going downstairs. Her right hip "dips" when she stands on that leg. No trauma, no swelling.
+      </div>
+      <strong>Questions:</strong> What structure is causing the lateral knee pain? What does the hip dip indicate?<br>
+      <button class="reveal-btn" onclick="event.stopPropagation();document.getElementById('a2').classList.toggle('open')">Reveal answer ▾</button>
+      <div class="answer" id="a2">Two issues: (1) <strong>IT band syndrome</strong> — the iliotibial band rubbing over the lateral femoral epicondyle. (2) The hip dip is a <strong>Trendelenburg sign</strong> indicating <strong>gluteus medius weakness</strong>. Weak hip abductors increase valgus knee stress and are a common underlying cause of IT band syndrome. Treatment targets both the local knee AND the proximal hip.</div>
+    </div>
+  </div>
+
+  <div class="card" data-section="clinical" data-id="6">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-clinical"></span>
+      <span class="card-title">Vignette 3 — the office worker with hand numbness</span>
+      <span class="badge badge-clinical">Clinical</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <div class="vignette">
+        <div class="vignette-label">Patient presentation</div>
+        A 38-year-old accountant reports her thumb, index, and middle finger go numb at night. She sometimes drops her coffee cup in the morning. She types 8–10 hours/day. Shaking her hands relieves the numbness temporarily.
+      </div>
+      <strong>Questions:</strong> Which nerve is compressed? Where? What structure is causing it?<br>
+      <button class="reveal-btn" onclick="event.stopPropagation();document.getElementById('a3').classList.toggle('open')">Reveal answer ▾</button>
+      <div class="answer" id="a3"><strong>Median nerve</strong> compression in the <strong>carpal tunnel</strong> — carpal tunnel syndrome. Nighttime symptoms occur because the wrist drops into flexion during sleep, narrowing the tunnel. Morning weakness reflects thenar muscle (thumb grip) involvement. The <strong>transverse carpal ligament</strong> forms the "roof" of the tunnel and is released in carpal tunnel surgery.</div>
+    </div>
+  </div>
+
+  <div class="group-label">Red flags</div>
+
+  <div class="card" data-section="clinical" data-id="7">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="card-type ct-clinical"></span>
+      <span class="card-title">Red flags — when anatomy signals danger</span>
+      <span class="badge badge-clinical">Clinical</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <span class="tag">Cauda equina syndrome</span> Saddle anesthesia (groin/inner thigh numbness) + bowel/bladder loss + bilateral leg weakness. EMERGENCY — immediate surgical referral. The most critical red flag in all of PT.<br><br>
+      <span class="tag">Bilateral symptoms</span> Both arms or both legs from the same spinal complaint = spinal cord involvement (myelopathy). Urgent.<br><br>
+      <span class="tag">Night pain + weight loss</span> Back pain waking you from sleep + unexplained weight loss = potential malignancy. PTs screen for cancer.<br><br>
+      <span class="tag">Upper motor neuron signs</span> Hyperreflexia, clonus, Babinski sign (big toe extends when you stroke the sole) = brain or spinal cord pathology, not peripheral nerve.
+      <div class="mem"><span>Non-negotiable anchor:</span> "Saddle anesthesia + bowel/bladder = cauda equina = refer immediately." Memorize cold before day one of lab.</div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<footer class="site-footer">
+  <strong>PT 725 — Anatomy for Physical Therapists</strong><br>
+  Pre-course study guide · All five body regions · Beginner-friendly
+</footer>
+
+<script>
+const SECTIONS = ['lower','upper','back','thorax','clinical'];
+const openedCards = {};
+SECTIONS.forEach(s => openedCards[s] = new Set());
+
+const CHIP_LABELS = {
+  lower:   ['Pelvis','Femur','Knee/leg','Foot','Gluteals','Quads','Hamstrings','Ankle','Gait','Injuries'],
+  upper:   ['Shoulder girdle','Humerus','Hand/wrist','Rotator cuff','Deltoid','Biceps/triceps','Brachial plexus','Injuries'],
+  back:    ['Vertebral regions','Single vertebra','Discs','Nerve roots','Superficial back','Deep back','Radiculopathy'],
+  thorax:  ['Ribcage','Sternum','Diaphragm','Intercostals','Abs','Heart','Vessels','Breathing','Referred pain'],
+  clinical:['5Q Framework','Dermatomes','Reflexes','Nerve patterns','Vignette 1','Vignette 2','Vignette 3','Red flags']
+};
+
+let currentSection = 'lower';
+
+function showSection(id) {
+  SECTIONS.forEach(s => {
+    document.getElementById('section-' + s).classList.toggle('active', s === id);
+  });
+  document.querySelectorAll('.nav-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', SECTIONS[i] === id);
+  });
+  currentSection = id;
+  renderChips();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function toggle(header) {
+  const card = header.parentElement;
+  const body = card.querySelector('.card-body');
+  const chev = header.querySelector('.chevron');
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  chev.classList.toggle('open', !isOpen);
+  if (!isOpen) {
+    const id = parseInt(card.dataset.id);
+    const sec = card.dataset.section;
+    openedCards[sec].add(id);
+    renderChips();
+  }
+}
+
+function renderChips() {
+  const labels = CHIP_LABELS[currentSection];
+  const opened = openedCards[currentSection];
+  const container = document.getElementById('progress-chips');
+  container.innerHTML = labels.map((l, i) =>
+    `<span class="prog-chip ${opened.has(i) ? 'done' : ''}">${l}</span>`
+  ).join('');
+}
+
+renderChips();
+</script>
+</body>
+</html>
