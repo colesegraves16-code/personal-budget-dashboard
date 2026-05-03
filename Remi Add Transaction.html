@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Tracker - Add Transaction</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --pale-green-header: #9FD9C3;
+            --pale-green-light: #F0F6F3;
+            --pale-green-dark: #4A6F63;
+            --pale-green-accent: #6BA896;
+            --text-dark: #1A1A1A;
+            --text-muted: #666666;
+            --border-color: #E0E8E5;
+            --success-color: #52A574;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5fbf9 0%, #f0f6f3 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: var(--text-dark);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(154, 217, 195, 0.12);
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--pale-green-header) 0%, var(--pale-green-accent) 100%);
+            padding: 40px 30px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.95;
+            font-weight: 500;
+        }
+
+        .form-section {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--pale-green-dark);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            color: var(--text-dark);
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--pale-green-header);
+            box-shadow: 0 0 0 3px rgba(159, 217, 195, 0.1);
+            background: var(--pale-green-light);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-row .form-group {
+            margin-bottom: 0;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        button {
+            padding: 14px 20px;
+            border: 1.5px solid var(--pale-green-header);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, var(--pale-green-header) 0%, var(--pale-green-accent) 100%);
+            color: white;
+            border-color: var(--pale-green-header);
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(159, 217, 195, 0.3);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .btn-reset {
+            background: white;
+            color: var(--pale-green-dark);
+            border-color: var(--border-color);
+        }
+
+        .btn-reset:hover {
+            background: var(--pale-green-light);
+            border-color: var(--pale-green-header);
+        }
+
+        .success-screen {
+            display: none;
+            text-align: center;
+            padding: 60px 30px;
+        }
+
+        .success-screen.show {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--pale-green-header) 0%, var(--pale-green-accent) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            animation: scaleIn 0.6s ease-out;
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .success-icon svg {
+            width: 40px;
+            height: 40px;
+        }
+
+        .success-screen h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            color: var(--pale-green-dark);
+            margin-bottom: 12px;
+        }
+
+        .success-screen p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .btn-new-transaction {
+            background: linear-gradient(135deg, var(--pale-green-header) 0%, var(--pale-green-accent) 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-new-transaction:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(159, 217, 195, 0.3);
+        }
+
+        @media (max-width: 480px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .form-section {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Form -->
+        <div id="formContainer">
+            <div class="header">
+                <h1>Add Transaction</h1>
+                <p>Track your spending</p>
+            </div>
+
+            <form class="form-section" id="transactionForm">
+                <div class="form-group">
+                    <label for="date">Date</label>
+                    <input type="date" id="date" name="date" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="type">Type</label>
+                        <select id="type" name="type" required>
+                            <option value="">Select type</option>
+                            <option value="Expense">Expense</option>
+                            <option value="Income">Income</option>
+                            <option value="Investment">Investment</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" name="category" required>
+                            <option value="">Select category</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="budget">Budget</label>
+                        <input type="number" id="budget" name="budget" placeholder="0.00" step="0.01" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="actual">Actual</label>
+                        <input type="number" id="actual" name="actual" placeholder="0.00" step="0.01" min="0" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="note">Note</label>
+                    <textarea id="note" name="note" placeholder="Add a note (optional)"></textarea>
+                </div>
+
+                <div class="button-group">
+                    <button type="reset" class="btn-reset">Clear</button>
+                    <button type="submit" class="btn-submit">Add Transaction</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Success Screen -->
+        <div id="successScreen" class="success-screen">
+            <div class="success-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </div>
+            <h2>Transaction Added!</h2>
+            <p>Your transaction has been recorded successfully.</p>
+            <button class="btn-new-transaction" onclick="resetForm()">Add Another</button>
+        </div>
+    </div>
+
+    <script>
+        // Set today's date as default
+        document.getElementById('date').valueAsDate = new Date();
+
+        // Category options by type
+        const categories = {
+            Expense: [
+                'Groceries',
+                'Food / Eating Out',
+                'Clothing',
+                'Transportation',
+                'Entertainment',
+                'Utilities',
+                'Miscellaneous'
+            ],
+            Income: [
+                'Salary',
+                'Freelance',
+                'Investment Income',
+                'Other Income'
+            ],
+            Investment: [
+                'Stock',
+                'Crypto',
+                'Real Estate',
+                'Other Investment'
+            ]
+        };
+
+        // Update categories based on selected type
+        document.getElementById('type').addEventListener('change', function() {
+            const categorySelect = document.getElementById('category');
+            const selectedType = this.value;
+            categorySelect.innerHTML = '<option value="">Select category</option>';
+
+            if (selectedType && categories[selectedType]) {
+                categories[selectedType].forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat;
+                    option.textContent = cat;
+                    categorySelect.appendChild(option);
+                });
+            }
+        });
+
+        // Handle form submission
+        document.getElementById('transactionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = {
+                date: document.getElementById('date').value,
+                type: document.getElementById('type').value,
+                category: document.getElementById('category').value,
+                budget: parseFloat(document.getElementById('budget').value) || 0,
+                actual: parseFloat(document.getElementById('actual').value),
+                note: document.getElementById('note').value
+            };
+
+            // Replace with your Google Apps Script deployment URL
+            const scriptUrl = 'https://script.google.com/macros/s/AKfycbyM2G0dY7OMYpLLwvt3GeYnLFPaHt0w4WAltSQiKgvvEj-ZXf3xK2lLezpkf6aIcS8pCg/exec';
+
+            try {
+                const response = await fetch(scriptUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                // Show success screen
+                showSuccessScreen();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error submitting transaction. Please try again.');
+            }
+        });
+
+        function showSuccessScreen() {
+            document.getElementById('formContainer').style.display = 'none';
+            document.getElementById('successScreen').classList.add('show');
+        }
+
+        function resetForm() {
+            document.getElementById('transactionForm').reset();
+            document.getElementById('formContainer').style.display = 'block';
+            document.getElementById('successScreen').classList.remove('show');
+            document.getElementById('date').valueAsDate = new Date();
+        }
+    </script>
+</body>
+</html>
