@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#0a1628"/>
+<title>Master Baiter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0a1628;--navy2:#111f35;--navy3:#162844;--navy4:#1e3454;
+  --blue:#1a73e8;--blue2:#2196f3;--teal:#00bcd4;
+  --orange:#ff6b35;--orange2:#ff8c42;
+  --green:#4caf50;--yellow:#ffc107;--red:#f44336;
+  --text:#ffffff;--text2:#b0bec5;--text3:#78909c;
+  --border:rgba(255,255,255,0.08);--card:rgba(14,28,52,0.96);
+}
+html,body{height:100%;overflow:hidden;background:var(--navy);color:var(--text);
+  font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;
+  /* prevent iOS rubber-band scroll on body */
+  overscroll-behavior:none}
+.app{display:flex;flex-direction:column;height:100dvh;max-width:430px;margin:0 auto;position:relative;overflow:hidden}
+
+/* ── TOP NAV ── */
+.top-nav{position:absolute;top:0;left:0;right:0;z-index:1000;
+  background:linear-gradient(180deg,rgba(10,22,40,.95) 0%,rgba(10,22,40,0) 100%);
+  padding:env(safe-area-inset-top,12px) 0 20px}
+.top-nav-inner{display:flex;align-items:center;padding:0 12px;gap:8px;justify-content:space-between}
+.app-logo{font-size:18px;font-weight:700;color:#fff;letter-spacing:-.5px;white-space:nowrap}
+.app-logo span{color:var(--blue2)}
+.nav-tabs{display:flex;gap:2px;margin-left:8px;background:rgba(0,0,0,.3);border-radius:20px;padding:3px;flex-shrink:0}
+.nav-tab{padding:5px 10px;border-radius:16px;border:none;background:none;
+  color:var(--text2);font-size:11px;font-weight:500;cursor:pointer;transition:.2s;
+  font-family:'Inter',sans-serif;white-space:nowrap}
+.nav-tab.active{background:var(--blue);color:#fff}
+
+/* ── MAP (hero) ── */
+#map{position:absolute;inset:0;z-index:1}
+.leaflet-container{background:#0d1b30}
+
+/* ── BOTTOM SHEET ── */
+.sheet{
+  position:absolute;bottom:0;left:0;right:0;z-index:500;
+  background:var(--navy2);border-radius:20px 20px 0 0;
+  border-top:1px solid var(--border);
+  /* Key: fixed height so inner scroll works */
+  height:62vh;
+  display:flex;flex-direction:column;
+  transition:height .35s cubic-bezier(.4,0,.2,1);
+}
+.sheet.sheet-map{height:200px}
+.sheet-handle{width:36px;height:4px;background:rgba(255,255,255,.2);
+  border-radius:2px;margin:10px auto 4px;flex-shrink:0}
+.sheet-scroll{
+  flex:1;
+  overflow-y:scroll;  /* scroll not auto — forces scrollable on iOS */
+  -webkit-overflow-scrolling:touch; /* momentum scrolling on iOS */
+  overscroll-behavior:contain;
+  scrollbar-width:none;
+  padding-bottom:env(safe-area-inset-bottom,20px);
+  min-height:0; /* critical for flexbox scroll children */
+}
+.sheet-scroll::-webkit-scrollbar{display:none}
+
+/* ── SCORE HEADER ── */
+.score-header{padding:14px 16px 10px;display:flex;align-items:center;gap:14px}
+.score-ring{position:relative;width:70px;height:70px;flex-shrink:0}
+.score-ring svg{transform:rotate(-90deg)}
+.score-num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.score-big{font-size:22px;font-weight:700;line-height:1}
+.score-small{font-size:9px;color:var(--text2);margin-top:1px;text-transform:uppercase;letter-spacing:.5px}
+.score-meta{flex:1}
+.score-label{font-size:16px;font-weight:600;margin-bottom:2px}
+.score-sub{font-size:12px;color:var(--text2)}
+.score-moon{font-size:20px;margin-left:auto}
+
+/* ── BITETIME BAR ── */
+.bitetime-wrap{padding:0 16px 12px}
+.bitetime-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.bitetime-label span{color:var(--orange);font-weight:600}
+.bitetime-bar{display:flex;gap:2px;height:28px;align-items:stretch}
+.bt-seg{flex:1;border-radius:3px;position:relative;cursor:pointer;transition:.15s}
+.bt-seg:hover{opacity:.85;transform:scaleY(1.08)}
+.bt-now-line{position:absolute;top:-4px;bottom:-4px;width:2px;background:#fff;border-radius:1px;left:50%;transform:translateX(-50%)}
+.bt-hour-labels{display:flex;justify-content:space-between;margin-top:4px;font-size:9px;color:var(--text3)}
+
+/* ── WEATHER STRIP ── */
+.weather-strip{display:flex;gap:0;overflow-x:auto;padding:0 12px 10px;scrollbar-width:none}
+.weather-strip::-webkit-scrollbar{display:none}
+.wx-cell{flex:0 0 52px;text-align:center;padding:6px 4px;border-radius:8px;cursor:pointer;transition:.15s}
+.wx-cell:hover,.wx-cell.active{background:rgba(255,255,255,.07)}
+.wx-cell.active{background:rgba(26,115,232,.2);border:1px solid rgba(26,115,232,.3)}
+.wx-hour{font-size:9px;color:var(--text3);margin-bottom:3px}
+.wx-icon{font-size:16px;margin-bottom:3px}
+.wx-temp{font-size:11px;font-weight:600}
+.wx-wind{font-size:9px;color:var(--text3)}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:var(--border);margin:0 16px}
+
+/* ── CONDITIONS ROW ── */
+.cond-row{display:flex;padding:10px 16px;gap:0}
+.cond-item{flex:1;text-align:center}
+.cond-item+.cond-item{border-left:1px solid var(--border)}
+.cond-val{font-size:14px;font-weight:600;margin-bottom:2px}
+.cond-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px}
+
+/* ── LURE SECTION ── */
+.section{padding:10px 16px}
+.section-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.lure-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.lure-chip{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;
+  background:rgba(255,107,53,.12);border:1px solid rgba(255,107,53,.3);color:var(--orange2)}
+.lake-chip{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;display:inline-flex;align-items:center;gap:5px}
+.advice-text{font-size:12px;color:var(--text2);line-height:1.55}
+
+/* ── GO/NOGO ── */
+.gonogo{margin:0 16px 10px;padding:10px 14px;border-radius:12px;display:flex;align-items:center;gap:10px}
+.gonogo.go{background:rgba(76,175,80,.12);border:1px solid rgba(76,175,80,.3)}
+.gonogo.nogo{background:rgba(244,67,54,.12);border:1px solid rgba(244,67,54,.3)}
+.gonogo-badge{font-size:13px;font-weight:700;letter-spacing:.5px;padding:4px 10px;border-radius:8px}
+.gonogo.go .gonogo-badge{background:rgba(76,175,80,.2);color:var(--green)}
+.gonogo.nogo .gonogo-badge{background:rgba(244,67,54,.2);color:var(--red)}
+.gonogo-reason{font-size:11px;color:var(--text2);line-height:1.4}
+
+/* ── OUTLOOK PAGE ── */
+.outlook-day{padding:10px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
+.ol-day-name{font-size:13px;font-weight:600;width:80px}
+.ol-bar-wrap{flex:1;height:8px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden}
+.ol-bar{height:100%;border-radius:4px}
+.ol-score{font-size:14px;font-weight:700;width:36px;text-align:right}
+.ol-best{font-size:10px;color:var(--text3);width:60px;text-align:right}
+.past-row{padding:8px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.past-time{font-size:12px;color:var(--text2);width:44px}
+.past-bar-bg{flex:1;height:8px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden}
+.past-bar{height:100%;border-radius:4px}
+.past-score{font-size:12px;font-weight:600;width:28px;text-align:right}
+.past-cond{font-size:10px;color:var(--text3);width:80px;text-align:right}
+.section-hdr{padding:12px 16px 6px;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px}
+
+/* ── MAP POND PANEL ── */
+.pond-panel{position:absolute;top:70px;left:10px;right:10px;z-index:600;
+  background:var(--card);border-radius:14px;border:1px solid var(--border);
+  padding:12px 14px;display:none;backdrop-filter:blur(10px)}
+.pond-panel.visible{display:block;animation:slideDown .25s ease}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.pond-name{font-size:15px;font-weight:600;margin-bottom:4px}
+.pond-sub{font-size:11px;color:var(--text2);margin-bottom:8px}
+.pond-zones{display:flex;gap:6px;flex-wrap:wrap}
+.pond-zone{padding:4px 10px;border-radius:12px;font-size:11px;font-weight:500}
+.pond-zone.hot{background:rgba(76,175,80,.2);border:1px solid rgba(76,175,80,.4);color:#81c784}
+.pond-zone.warm{background:rgba(255,193,7,.15);border:1px solid rgba(255,193,7,.3);color:#ffd54f}
+.pond-zone.cold{background:rgba(33,150,243,.15);border:1px solid rgba(33,150,243,.3);color:#64b5f6}
+.pond-close{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;line-height:1}
+
+/* ── SEARCH BAR ── */
+.search-bar{position:absolute;top:calc(env(safe-area-inset-top,12px) + 44px);left:10px;right:10px;z-index:999}
+.search-input{width:100%;padding:10px 14px 10px 36px;background:rgba(14,28,52,.95);
+  border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#fff;
+  font-family:'Inter',sans-serif;font-size:13px;outline:none;backdrop-filter:blur(10px)}
+.search-input::placeholder{color:var(--text3)}
+.search-icon{position:absolute;left:22px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none}
+.search-results{position:absolute;top:calc(100% + 4px);left:0;right:0;
+  background:var(--navy2);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:none}
+.search-results.visible{display:block}
+.search-result-item{padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);transition:.15s}
+.search-result-item:last-child{border-bottom:none}
+.search-result-item:hover{background:rgba(255,255,255,.05)}
+.search-result-item .sr-name{font-weight:500}
+.search-result-item .sr-sub{font-size:11px;color:var(--text3);margin-top:1px}
+
+/* ── TACKLE BOX ── */
+.tackle-species-tabs{display:flex;gap:6px;padding:12px 14px 0;overflow-x:auto;scrollbar-width:none}
+.tackle-species-tabs::-webkit-scrollbar{display:none}
+.sp-tab{flex:0 0 auto;padding:6px 14px;border-radius:20px;border:1px solid var(--border);
+  background:none;color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;
+  font-family:'Inter',sans-serif;transition:.2s;white-space:nowrap}
+.sp-tab.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.conditions-banner{margin:10px 14px;padding:10px 12px;border-radius:10px;
+  background:rgba(255,255,255,.04);border:1px solid var(--border);
+  display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--text2)}
+.cb-item{display:flex;align-items:center;gap:4px}
+.cb-dot{width:7px;height:7px;border-radius:50%}
+.bait-section{padding:0 14px 10px}
+.bait-section-title{font-size:10px;color:var(--text3);text-transform:uppercase;
+  letter-spacing:.8px;margin:10px 0 7px;display:flex;align-items:center;gap:6px}
+.bait-section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.bait-card{background:rgba(255,255,255,.04);border:1px solid var(--border);
+  border-radius:12px;padding:11px 12px;margin-bottom:8px;position:relative;overflow:hidden}
+.bait-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px}
+.bait-card.conf-high::before{background:var(--orange)}
+.bait-card.conf-med::before{background:var(--yellow)}
+.bait-card.conf-low::before{background:var(--text3)}
+.bait-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px}
+.bait-name{font-size:13px;font-weight:600}
+.bait-conf{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px}
+.conf-high .bait-conf{background:rgba(255,107,53,.15);color:var(--orange)}
+.conf-med .bait-conf{background:rgba(255,193,7,.12);color:var(--yellow)}
+.conf-low .bait-conf{background:rgba(120,144,156,.12);color:var(--text3)}
+.bait-why{font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:8px}
+.color-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.color-swatch{display:flex;align-items:center;gap:5px;padding:4px 9px;border-radius:20px;
+  font-size:11px;font-weight:500;border:1px solid rgba(255,255,255,.1)}
+.swatch-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;border:1px solid rgba(255,255,255,.2)}
+.bait-tip{font-size:11px;color:var(--text3);font-style:italic;line-height:1.4}
+.water-clarity-bar{display:flex;align-items:center;gap:8px;padding:8px 14px;margin-bottom:4px}
+.wc-label{font-size:11px;color:var(--text2);width:60px}
+.wc-bar-bg{flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
+.wc-bar{height:100%;border-radius:3px}
+.wc-val{font-size:11px;font-weight:600;width:80px;text-align:right}
+.tackle-summary{margin:10px 14px;padding:12px;border-radius:10px;
+  background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.2)}
+.tackle-summary-title{font-size:11px;color:var(--orange);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.tackle-summary-text{font-size:12px;color:var(--text2);line-height:1.55}
+
+/* ── LOADING/ERR ── */
+.loading{display:flex;flex-direction:column;align-items:center;gap:10px;padding:30px 0;color:var(--text2);font-size:13px}
+.spinner{width:28px;height:28px;border:3px solid rgba(26,115,232,.2);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err-msg{padding:20px;text-align:center;color:var(--text2);font-size:13px}
+.err-msg strong{color:var(--red);display:block;margin-bottom:6px}
+.retry-btn{margin-top:8px;padding:7px 18px;background:rgba(26,115,232,.2);border:1px solid rgba(26,115,232,.4);
+  border-radius:8px;color:var(--blue2);font-size:12px;cursor:pointer;font-family:'Inter',sans-serif}
+.hidden{display:none!important}
+
+/* ── MAP FAB ── */
+.map-fab{position:absolute;right:12px;z-index:600;width:40px;height:40px;border-radius:50%;
+  background:var(--navy2);border:1px solid var(--border);display:flex;align-items:center;
+  justify-content:center;cursor:pointer;font-size:18px;transition:.2s;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.map-fab:hover{background:var(--navy3)}
+/* sits just above the sheet */
+.fab-locate{bottom:calc(62vh + 12px)}
+
+/* ── TAP HINT ── */
+.tap-hint{position:absolute;bottom:calc(62vh + 58px);
+  left:50%;transform:translateX(-50%);z-index:600;
+  background:rgba(10,22,40,.85);border:1px solid var(--border);border-radius:20px;
+  padding:6px 14px;font-size:11px;color:var(--text2);white-space:nowrap;
+  backdrop-filter:blur(8px);pointer-events:none;display:none}
+.tap-hint.visible{display:block;animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- MAP (full screen behind everything) -->
+  <div id="map"></div>
+
+  <!-- TOP NAV -->
+  <div class="top-nav">
+    <div class="top-nav-inner">
+      <div class="app-logo">Master<span>Baiter</span></div>
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="switchTab('forecast',this)">Forecast</button>
+        <button class="nav-tab" onclick="switchTab('map',this)">Map</button>
+        <button class="nav-tab" onclick="switchTab('tackle',this)">Tackle</button>
+        <button class="nav-tab" onclick="switchTab('outlook',this)">Outlook</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEARCH BAR (map tab only) -->
+  <div class="search-bar hidden" id="search-bar">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" id="search-input" placeholder="Search a lake, pond, or address…" autocomplete="off"/>
+    <div class="search-results" id="search-results"></div>
+  </div>
+
+  <!-- POND PANEL (shows after tap) -->
+  <div class="pond-panel" id="pond-panel">
+    <button class="pond-close" onclick="closePondPanel()">×</button>
+    <div class="pond-name" id="pond-name">Analyzing…</div>
+    <div class="pond-sub" id="pond-sub">Loading water body info</div>
+    <div class="pond-zones" id="pond-zones"></div>
+  </div>
+
+  <!-- TAP HINT -->
+  <div class="tap-hint" id="tap-hint">👆 Tap any pond or lake to analyze it</div>
+
+  <!-- MAP FABs -->
+  <div class="map-fab fab-locate" id="fab-locate" onclick="locateMe()" title="Find me">📍</div>
+
+  <!-- BOTTOM SHEET -->
+  <div class="sheet" id="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-scroll" id="sheet-scroll">
+
+      <!-- ══ FORECAST TAB ══ -->
+      <div id="tab-forecast">
+        <div id="f-loading" class="loading"><div class="spinner"></div><span>Loading live data…</span></div>
+        <div id="f-err" class="err-msg hidden"><strong>⚠ Data unavailable</strong><span id="f-err-msg">Check your connection.</span><br><button class="retry-btn" onclick="init()">↺ Retry</button></div>
+        <div id="f-content" class="hidden">
+          <!-- Score ring + meta -->
+          <div class="score-header">
+            <div class="score-ring">
+              <svg width="70" height="70" viewBox="0 0 70 70">
+                <circle cx="35" cy="35" r="30" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="6"/>
+                <circle id="score-ring-circle" cx="35" cy="35" r="30" fill="none" stroke="#ff6b35" stroke-width="6"
+                  stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="188.5"/>
+              </svg>
+              <div class="score-num">
+                <div class="score-big" id="score-num">--</div>
+                <div class="score-small">score</div>
+              </div>
+            </div>
+            <div class="score-meta">
+              <div class="score-label" id="score-label">Loading…</div>
+              <div class="score-sub" id="score-sub">Kansas · Today</div>
+            </div>
+            <div class="score-moon" id="score-moon">🌕</div>
+          </div>
+
+          <!-- GO / NO-GO -->
+          <div class="gonogo" id="gonogo">
+            <div class="gonogo-badge" id="gonogo-badge">—</div>
+            <div class="gonogo-reason" id="gonogo-reason">—</div>
+          </div>
+
+          <!-- BiteTime bar -->
+          <div class="bitetime-wrap">
+            <div class="bitetime-label">BiteTime™ <span id="bt-best-label">Best: —</span></div>
+            <div class="bitetime-bar" id="bitetime-bar"></div>
+            <div class="bt-hour-labels" id="bt-labels"></div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Hourly weather strip -->
+          <div class="weather-strip" id="weather-strip"></div>
+
+          <div class="divider"></div>
+
+          <!-- Current conditions row -->
+          <div class="cond-row">
+            <div class="cond-item"><div class="cond-val" id="c-temp">--</div><div class="cond-lbl">Temp</div></div>
+            <div class="cond-item"><div class="cond-val" id="c-wind">--</div><div class="cond-lbl">Wind</div></div>
+            <div class="cond-item"><div class="cond-val" id="c-press">--</div><div class="cond-lbl">Pressure</div></div>
+            <div class="cond-item"><div class="cond-val" id="c-humid">--</div><div class="cond-lbl">Humidity</div></div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Lake color + lure -->
+          <div class="section">
+            <div class="section-title">Lake Conditions</div>
+            <div id="lake-chip-wrap" style="margin-bottom:8px"></div>
+            <div class="lure-chips" id="lure-chips"></div>
+            <div class="advice-text" id="lure-advice"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ MAP TAB (just a label — map is behind) ══ -->
+      <div id="tab-map" class="hidden">
+        <div style="padding:14px 16px 6px">
+          <div style="font-size:13px;font-weight:600;margin-bottom:4px">Tap any pond or lake</div>
+          <div style="font-size:11px;color:var(--text2);line-height:1.5">
+            Tap water on the map to get wind-based fishing zones, best casting spots, and species info for that specific body of water. Use the search bar to jump to a named lake.
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div id="pond-detail-sheet" style="padding:14px 16px">
+          <div style="font-size:12px;color:var(--text3);font-style:italic">No pond selected yet — tap the map above.</div>
+        </div>
+      </div>
+
+      <!-- ══ TACKLE TAB ══ -->
+      <div id="tab-tackle" class="hidden">
+        <div id="tk-loading" class="loading"><div class="spinner"></div><span>Analyzing conditions…</span></div>
+        <div id="tk-err" class="err-msg hidden"><strong>⚠ Data unavailable</strong><button class="retry-btn" onclick="init()">↺ Retry</button></div>
+        <div id="tk-content" class="hidden">
+          <!-- Condition summary banner -->
+          <div class="conditions-banner" id="tk-banner"></div>
+          <!-- Water clarity visual -->
+          <div id="tk-clarity"></div>
+          <!-- AI summary -->
+          <div class="tackle-summary" id="tk-summary"></div>
+          <!-- Species tabs -->
+          <div class="tackle-species-tabs" id="tk-species-tabs"></div>
+          <!-- Bait cards -->
+          <div class="bait-section" id="tk-baits"></div>
+        </div>
+      </div>
+
+      <!-- ══ OUTLOOK TAB ══ -->
+      <div id="tab-outlook" class="hidden">
+        <div id="ol-loading" class="loading"><div class="spinner"></div><span>Loading forecast…</span></div>
+        <div id="ol-content" class="hidden">
+          <div class="section-hdr">3-Day Forecast</div>
+          <div id="ol-days"></div>
+          <div class="section-hdr" style="margin-top:6px">Yesterday's Accuracy</div>
+          <div style="padding:6px 16px 4px;font-size:10px;color:var(--text3)">Predicted scores using actual recorded weather</div>
+          <div id="past-rows"></div>
+        </div>
+      </div>
+
+    </div><!-- /sheet-scroll -->
+  </div><!-- /sheet -->
+
+</div><!-- /app -->
+
+<script>
+"use strict";
+const LAT=38.5, LON=-98.0, TZ="America/Chicago";
+const $=id=>document.getElementById(id);
+function show(id){$(id).classList.remove('hidden')}
+function hide(id){$(id).classList.add('hidden')}
+function scoreColor(s){return s>=80?'#ff6b35':s>=65?'#4caf50':s>=45?'#ffc107':'#f44336'}
+
+function compass(d){return["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"][Math.round(d/22.5)%16]}
+function localDateStr(off=0){const d=new Date();d.setDate(d.getDate()+off);return d.toLocaleDateString('en-CA',{timeZone:TZ})}
+function localHour(){const s=new Date().toLocaleString('en-US',{timeZone:TZ,hour:'numeric',hour12:false});const h=parseInt(s,10);return isNaN(h)?new Date().getHours():h%24}
+function wxIcon(code,h){
+  if(code===0)return h>6&&h<20?'☀️':'🌙';
+  if(code<=2)return h>6&&h<20?'⛅':'🌙';
+  if(code<=3)return'☁️';if(code<=49)return'🌫️';
+  if(code<=59)return'🌦️';if(code<=69)return'🌧️';
+  if(code<=79)return'❄️';if(code<=82)return'🌧️';return'⛈️';
+}
+
+// ── SOLUNAR ──
+function toJD(d){return d.getTime()/86400000+2440587.5}
+function sunTimes(date){
+  const JD=toJD(date),n=JD-2451545,L=(280.46+0.9856474*n)%360,g=(357.528+0.9856003*n)%360*Math.PI/180,
+    lam=(L+1.915*Math.sin(g)+0.02*Math.sin(2*g))*Math.PI/180,eps=23.439*Math.PI/180,
+    sinDec=Math.sin(eps)*Math.sin(lam),dec=Math.asin(sinDec),
+    cosH=(Math.sin(-0.01454)-Math.sin(LAT*Math.PI/180)*sinDec)/(Math.cos(LAT*Math.PI/180)*Math.cos(dec));
+  if(cosH>1||cosH<-1)return{sunrise:6,sunset:20};
+  const H=Math.acos(cosH)*180/Math.PI,RA=Math.atan2(Math.cos(eps)*Math.sin(lam),Math.cos(lam))*180/Math.PI/15,noon=12-LON/15-(L/15-RA);
+  return{sunrise:noon-H/15,sunset:noon+H/15};
+}
+function moonPhase(date){
+  const JD=toJD(date),T=(JD-2451545)/36525,D=(297.85036+445267.11148*T)*Math.PI/180,phase=((0.5*(1-Math.cos(D)))%1+1)%1;
+  const names=["New Moon","Waxing Crescent","First Quarter","Waxing Gibbous","Full Moon","Waning Gibbous","Last Quarter","Waning Crescent"];
+  const icons=["🌑","🌒","🌓","🌔","🌕","🌖","🌗","🌘"];
+  const idx=phase<0.03?0:phase<0.22?1:phase<0.28?2:phase<0.47?3:phase<0.53?4:phase<0.72?5:phase<0.78?6:7;
+  return{name:names[idx],icon:icons[idx],illum:Math.round(phase*100)};
+}
+function solunarBoost(hour,date,lat,lon){
+  const JD=toJD(date),Lm=(218.316+13.176396*(JD-2451545))%360,
+    Mm=(134.963+13.064993*(JD-2451545))*Math.PI/180,Fm=(93.272+13.22935*(JD-2451545))*Math.PI/180,
+    lam=(Lm+6.289*Math.sin(Mm))*Math.PI/180,eps=23.439*Math.PI/180,sinDec=Math.sin(eps)*Math.sin(lam),
+    dec=Math.asin(sinDec),la=lat*Math.PI/180,
+    cosH=(Math.sin(0.00218)-Math.sin(la)*sinDec)/(Math.cos(la)*Math.cos(dec));
+  if(cosH>1||cosH<-1)return 0;
+  const H=Math.acos(cosH)*180/Math.PI,RA=Math.atan2(Math.cos(eps)*Math.sin(lam),Math.cos(lam))*180/Math.PI/15,noon=12-lon/15;
+  const mr=((noon-H/15-RA)%24+24)%24,ms=((noon+H/15-RA)%24+24)%24,tr=(ms+12)%24,op=(tr+12)%24;
+  let boost=0;
+  [[mr,.75,.5],[ms,.75,.5],[tr,1.5,1],[op,1.5,1]].forEach(([c,hw,mb])=>{
+    const d=Math.min(Math.abs(hour-c),Math.abs(hour-c+24),Math.abs(hour-c-24));
+    if(d<=hw)boost=Math.max(boost,(1-d/hw)*mb);
+  });
+  return boost;
+}
+
+// ── SCORING ──
+function pressureTrend(hours,idx){
+  if(idx<3)return'steady';
+  const diff=(hours[idx]?.pressure??0)-(hours[idx-3]?.pressure??0);
+  return diff>1.5?'rising':diff<-1.5?'falling':'steady';
+}
+function scoreHour(h,idx,all,sun,date,lat,lon){
+  const trend=pressureTrend(all,idx),ws=h.windSpeed,hr=h.hour,{sunrise,sunset}=sun;
+  const dawnDusk=hr>=sunrise-1&&hr<=sunrise+1.5?Math.max(0,100-Math.abs(hr-sunrise)*15):
+    hr>=sunset-1.5&&hr<=sunset+1?Math.max(0,95-Math.abs(hr-sunset)*15):
+    hr<sunrise-1||hr>sunset+1?55:hr>10&&hr<15?45:65;
+  const raw={
+    pressure:trend==='rising'?85:trend==='steady'?65:30,
+    wind:ws<2?50:ws<8?85:ws<15?75:ws<22?45:20,
+    temp:h.tempF<40?20:h.tempF<50?40:h.tempF<60?65:h.tempF<75?95:h.tempF<85?80:h.tempF<92?55:30,
+    dawnDusk,solunar:40+solunarBoost(hr,date,lat??LAT,lon??LON)*60,
+    cloud:h.cloudCover<20?60:h.cloudCover<50?75:h.cloudCover<80?90:80,
+    precip:h.precipProb<20?80:h.precipProb<40?85:h.precipProb<65?60:25
+  };
+  const w={pressure:.22,wind:.18,temp:.18,dawnDusk:.22,solunar:.12,cloud:.05,precip:.03};
+  return{score:Math.round(Math.max(0,Math.min(100,Object.keys(raw).reduce((a,k)=>a+raw[k]*w[k],0)))),trend};
+}
+
+// ── LAKE COLOR + LURE ──
+function getLakeAndLure(h,trend){
+  const turb=h.windSpeed*.4+(h.cloudCover<30?0:8)+(h.precipProb>50?15:0);
+  let cName,cColor,cText,cDesc;
+  if(turb<12){cName='Clear';cColor='#4fc3f7';cText='#0d47a1';cDesc='Finesse presentations — fish can inspect your bait closely.';}
+  else if(turb<25){cName='Lightly Stained';cColor='#81c784';cText='#1b5e20';cDesc='Near-perfect — fish aggressive but not over-analytical.';}
+  else if(turb<40){cName='Stained';cColor='#ffb74d';cText='#e65100';cDesc='1–2 ft visibility. Use louder, vibrating baits.';}
+  else{cName='Muddy';cColor='#a1887f';cText='#3e2723';cDesc='Very low visibility — bright colors, rattles, fish by feel.';}
+  let lures=[];
+  const t=h.tempF;
+  if(t<50)lures=['Blade Bait','Jigging Spoon','Drop Shot'];
+  else if(t<60)lures=['Suspending Jerkbait','Ned Rig','Carolina Rig'];
+  else if(t<72)lures=['Spinnerbait','Crankbait','Ned Rig','Finesse Jig'];
+  else if(t<85)lures=['Topwater','Soft Plastic Worm','Swimbait','Buzzbait'];
+  else lures=['Deep Crankbait','Football Jig','Drop Shot (deep)'];
+  let advice=t<50?'Cold water: slow down every presentation. Fish near bottom.':
+    t<60?'Warming water: pause-heavy retrieves around structure.':
+    t<72?'Prime temps: cover water fast with moving baits.':
+    t<85?'Hot water: topwater at dawn/dusk, go deep midday.':
+    'Heat stress: fish deep, slow. Find thermocline structure.';
+  if(cName==='Clear')advice+=' Natural colors (green pumpkin, shad, watermelon).';
+  else if(cName==='Stained'||cName==='Muddy')advice+=' Bright colors: chartreuse, white, or orange. Add a rattle.';
+  if(trend==='falling')advice+=' Falling pressure — pre-front bite window is ON.';
+  if(trend==='rising')advice+=' Post-front: fish sluggish, go finesse near bottom.';
+  return{cName,cColor,cText,cDesc,lures,advice};
+}
+
+// ── FETCH ──
+async function fetchWithTimeout(url,ms=12000){
+  const ctrl=new AbortController();const id=setTimeout(()=>ctrl.abort(),ms);
+  try{const r=await fetch(url,{signal:ctrl.signal});clearTimeout(id);if(!r.ok)throw new Error(`HTTP ${r.status}`);return await r.json();}
+  catch(e){clearTimeout(id);throw e;}
+}
+async function fetchWeather(lat,lon){
+  const vars=['temperature_2m','wind_speed_10m','wind_direction_10m','surface_pressure',
+    'relative_humidity_2m','precipitation_probability','cloud_cover','weather_code'];
+  const p=new URLSearchParams({latitude:lat,longitude:lon,temperature_unit:'fahrenheit',
+    wind_speed_unit:'mph',timezone:TZ,past_days:1,forecast_days:4});
+  vars.forEach(v=>p.append('hourly',v));
+  let last;
+  for(let i=1;i<=3;i++){
+    try{const d=await fetchWithTimeout(`https://api.open-meteo.com/v1/forecast?${p}`,12000);if(!d.hourly?.time?.length)throw new Error('Empty');return d;}
+    catch(e){last=e;if(i<3)await new Promise(r=>setTimeout(r,1500*i));}
+  }
+  throw last;
+}
+function parseHourly(data){
+  const h=data.hourly;
+  return h.time.map((t,i)=>({time:t,dateStr:t.slice(0,10),hour:new Date(t).getHours(),
+    tempF:h.temperature_2m[i],windSpeed:h.wind_speed_10m[i],windDir:h.wind_direction_10m[i],
+    pressure:h.surface_pressure[i],humidity:h.relative_humidity_2m[i],
+    precipProb:h.precipitation_probability[i],cloudCover:h.cloud_cover[i],weatherCode:h.weather_code[i]}));
+}
+
+// ── RENDER FORECAST ──
+function renderForecast(allH,date,lat,lon){
+  const today=localDateStr(0),todayH=allH.filter(h=>h.dateStr===today);
+  if(!todayH.length)throw new Error('No data for today');
+  const sun=sunTimes(date),moon=moonPhase(date);
+  const nowH=localHour();
+  const nowIdx=allH.findIndex(h=>h.dateStr===today&&h.hour===nowH);
+  const cur=allH[nowIdx>=0?nowIdx:0]??todayH[0];
+  const scored=todayH.map(h=>{const gi=allH.findIndex(a=>a.time===h.time);return{...h,...scoreHour(h,gi,allH,sun,date,lat,lon)};});
+  const best=[...scored].sort((a,b)=>b.score-a.score)[0];
+  const curScore=scored.find(h=>h.hour===nowH)?.score??best.score;
+  const trend=pressureTrend(allH,nowIdx>=0?nowIdx:0);
+
+  // Score ring
+  const pct=curScore/100;
+  const circ=188.5;
+  const ring=$('score-ring-circle');
+  ring.style.strokeDashoffset=circ*(1-pct);
+  ring.style.stroke=scoreColor(curScore);
+  $('score-num').textContent=curScore;
+  $('score-num').style.color=scoreColor(curScore);
+  const lbl=curScore>=80?'🔥 Prime Bite':curScore>=65?'✅ Good Fishing':curScore>=45?'⚠️ Fair Bite':'❌ Slow Fishing';
+  $('score-label').textContent=lbl;
+  $('score-sub').textContent=`Kansas · ${new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'})} · ${moon.name}`;
+  $('score-moon').textContent=moon.icon;
+
+  // GO/NOGO
+  const go=curScore>=60;
+  $('gonogo').className='gonogo '+(go?'go':'nogo');
+  $('gonogo-badge').textContent=go?'GO FISH':'STAY HOME';
+  $('gonogo-reason').textContent=curScore>=80?'Prime conditions — fish are actively feeding right now!':
+    curScore>=65?'Good bite window — worth the trip.':curScore>=45?'Marginal — target dawn/dusk windows.':
+    cur.precipProb>65?'Storm risk — fish hunkered down.':cur.windSpeed>22?'Too windy for consistent action.':'Slow bite — fish are inactive.';
+
+  // BiteTime bar
+  const bar=$('bitetime-bar');const lbls=$('bt-labels');
+  bar.innerHTML='';lbls.innerHTML='';
+  scored.forEach(h=>{
+    const seg=document.createElement('div');seg.className='bt-seg';
+    seg.style.background=scoreColor(h.score);seg.style.opacity=0.3+0.7*(h.score/100);
+    if(h.hour===nowH){const line=document.createElement('div');line.className='bt-now-line';seg.appendChild(line);}
+    seg.title=`${String(h.hour).padStart(2,'0')}:00 — Score ${h.score}`;
+    bar.appendChild(seg);
+  });
+  [0,6,12,18,23].forEach(h=>{const d=document.createElement('div');d.textContent=h===0?'12a':h===12?'12p':h<12?`${h}a`:`${h-12}p`;lbls.appendChild(d);});
+  $('bt-best-label').textContent=`Best: ${String(best.hour).padStart(2,'0')}:00 (${best.score})`;
+  $('bt-best-label').style.color=scoreColor(best.score);
+
+  // Weather strip
+  const strip=$('weather-strip');strip.innerHTML='';
+  const stripHours=todayH.filter((_,i)=>i%2===0).slice(0,12);
+  stripHours.forEach(h=>{
+    const cell=document.createElement('div');cell.className='wx-cell'+(h.hour===nowH?' active':'');
+    cell.innerHTML=`<div class="wx-hour">${String(h.hour).padStart(2,'0')}:00</div>
+      <div class="wx-icon">${wxIcon(h.weatherCode,h.hour)}</div>
+      <div class="wx-temp">${Math.round(h.tempF)}°</div>
+      <div class="wx-wind">${Math.round(h.windSpeed)}mph</div>`;
+    strip.appendChild(cell);
+  });
+
+  // Conditions
+  $('c-temp').textContent=`${Math.round(cur.tempF)}°F`;
+  $('c-wind').textContent=`${Math.round(cur.windSpeed)} ${compass(cur.windDir)}`;
+  $('c-press').textContent=`${Math.round(cur.pressure)}hPa ${trend==='rising'?'↑':trend==='falling'?'↓':'→'}`;
+  $('c-humid').textContent=`${Math.round(cur.humidity)}%`;
+
+  // Lake + lure
+  const lc=getLakeAndLure(cur,trend);
+  $('lake-chip-wrap').innerHTML=`<span class="lake-chip" style="background:${lc.cColor}22;border:1px solid ${lc.cColor}55;color:${lc.cColor}">
+    <span style="width:9px;height:9px;border-radius:50%;background:${lc.cColor};display:inline-block"></span>
+    ${lc.cName} water — ${lc.cDesc}</span>`;
+  $('lure-chips').innerHTML=lc.lures.map(l=>`<span class="lure-chip">${l}</span>`).join('');
+  $('lure-advice').textContent=lc.advice;
+
+  hide('f-loading');hide('f-err');show('f-content');
+}
+
+// ── RENDER OUTLOOK ──
+function renderOutlook(allH,date){
+  const days=[0,1,2].map(off=>{
+    const d=new Date();d.setDate(d.getDate()+off);
+    const dateStr=localDateStr(off),hrs=allH.filter(h=>h.dateStr===dateStr);
+    if(!hrs.length)return null;
+    const sun=sunTimes(d),scores=hrs.map(h=>{const gi=allH.findIndex(a=>a.time===h.time);return scoreHour(h,gi,allH,sun,d,LAT,LON).score;});
+    const top6=[...scores].sort((a,b)=>b-a).slice(0,6);
+    const ds=Math.round(top6.reduce((a,v)=>a+v,0)/top6.length);
+    const bh=hrs[scores.indexOf(Math.max(...scores))].hour;
+    const dl=d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+    return{dl,ds,bh,color:scoreColor(ds),avgT:Math.round(hrs.reduce((a,h)=>a+h.tempF,0)/hrs.length)};
+  }).filter(Boolean);
+
+  $('ol-days').innerHTML=days.map(d=>`
+    <div class="outlook-day">
+      <div class="ol-day-name">${d.dl}</div>
+      <div class="ol-bar-wrap"><div class="ol-bar" style="width:${d.ds}%;background:${d.color}"></div></div>
+      <div class="ol-score" style="color:${d.color}">${d.ds}</div>
+      <div class="ol-best">${String(d.bh).padStart(2,'0')}:00 · ${d.avgT}°F</div>
+    </div>`).join('');
+
+  // Past accuracy
+  const yesterday=localDateStr(-1),yH=allH.filter(h=>h.dateStr===yesterday);
+  const pastRows=yH.length?[5,6,7,9,12,15,17,19].map(tH=>{
+    const h=yH.find(x=>x.hour===tH);if(!h)return'';
+    const gi=allH.findIndex(a=>a.time===h.time);
+    const d2=new Date();d2.setDate(d2.getDate()-1);
+    const {score}=scoreHour(h,gi,allH,sunTimes(d2),d2,LAT,LON);
+    return`<div class="past-row">
+      <div class="past-time">${String(tH).padStart(2,'0')}:00</div>
+      <div class="past-bar-bg"><div class="past-bar" style="width:${score}%;background:${scoreColor(score)}"></div></div>
+      <div class="past-score" style="color:${scoreColor(score)}">${score}</div>
+      <div class="past-cond">${Math.round(h.tempF)}°F ${Math.round(h.windSpeed)}mph</div>
+    </div>`;}).join('')
+  :'<div style="padding:12px 16px;font-size:12px;color:var(--text3)">No past data available</div>';
+  $('past-rows').innerHTML=pastRows;
+  hide('ol-loading');show('ol-content');
+}
+
+// ── MAP SETUP ──
+let map,windLayers=[],pondMarker=null;
+function initMap(){
+  map=L.map('map',{center:[38.5,-98.0],zoom:7,zoomControl:false,attributionControl:false});
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,className:'map-tiles'}).addTo(map);
+  L.control.attribution({position:'bottomleft',prefix:false}).addTo(map).addAttribution('© OpenStreetMap');
+  L.control.zoom({position:'topright'}).addTo(map);
+
+  // Tap handler
+  map.on('click',e=>onMapTap(e.latlng.lat,e.latlng.lng));
+
+  // Show tap hint after 1s
+  setTimeout(()=>{$('tap-hint').classList.add('visible');setTimeout(()=>$('tap-hint').classList.remove('visible'),4000);},1000);
+}
+
+function offsetPoint(lat,lon,bearingDeg,distKm){
+  const R=6371,b=bearingDeg*Math.PI/180,la=lat*Math.PI/180,lo=lon*Math.PI/180;
+  const la2=Math.asin(Math.sin(la)*Math.cos(distKm/R)+Math.cos(la)*Math.sin(distKm/R)*Math.cos(b));
+  const lo2=lo+Math.atan2(Math.sin(b)*Math.sin(distKm/R)*Math.cos(la),Math.cos(distKm/R)-Math.sin(la)*Math.sin(la2));
+  return[la2*180/Math.PI,lo2*180/Math.PI];
+}
+
+function drawWindZones(lat,lon,windDirDeg,windSpeed,pondName){
+  // Clear old
+  windLayers.forEach(l=>map.removeLayer(l));windLayers=[];
+  if(pondMarker){map.removeLayer(pondMarker);pondMarker=null;}
+
+  const downwind=(windDirDeg+180)%360;
+  const upwind=windDirDeg;
+  const side1=(windDirDeg+90)%360;
+
+  // Scale radius by zoom/wind — smaller for ponds
+  const zoom=map.getZoom();
+  const baseKm=zoom>=13?0.08:zoom>=11?0.2:zoom>=9?0.5:zoom>=7?1.5:4;
+
+  // Downwind shore — green — where baitfish stack up
+  const dwPt=offsetPoint(lat,lon,downwind,baseKm*.7);
+  const dw=L.circle(dwPt,{radius:baseKm*700*.6,color:'#4caf50',fillColor:'#4caf50',fillOpacity:.28,weight:1.5,dashArray:'4 4'})
+    .bindPopup(`<div style="font-family:Inter,sans-serif;font-size:13px">
+      <b style="color:#4caf50">🎯 CAST HERE — Downwind Shore</b><br><br>
+      Wind pushes warm, oxygenated water and baitfish to this shore.<br><br>
+      <b>Setup:</b> Stand on the upwind bank, cast downwind.<br>
+      <b>Lure:</b> Work parallel to shore, slow retrieve.<br>
+      <b>Species:</b> Bass, crappie, bluegill concentrate here.
+    </div>`).addTo(map);
+
+  // Upwind points — yellow — ambush predators
+  const uwPt=offsetPoint(lat,lon,upwind,baseKm*.65);
+  const uw=L.circle(uwPt,{radius:baseKm*700*.4,color:'#ffc107',fillColor:'#ffc107',fillOpacity:.22,weight:1.5})
+    .bindPopup(`<div style="font-family:Inter,sans-serif;font-size:13px">
+      <b style="color:#ffc107">🏹 Upwind Ambush Zone</b><br><br>
+      Bass and walleye stage here, facing into the current to ambush baitfish.<br><br>
+      <b>Setup:</b> Cast into this point, retrieve with the wind.<br>
+      <b>Lure:</b> Jig, drop shot, slow-rolling spinnerbait.<br>
+      <b>Tip:</b> Fish tight to structure — rock piles, docks, timber.
+    </div>`).addTo(map);
+
+  // Wind shadow — blue — panfish calm water
+  const wsPt=offsetPoint(lat,lon,side1,baseKm*.5);
+  const ws=L.circle(wsPt,{radius:baseKm*700*.3,color:'#2196f3',fillColor:'#2196f3',fillOpacity:.18,weight:1})
+    .bindPopup(`<div style="font-family:Inter,sans-serif;font-size:13px">
+      <b style="color:#2196f3">🌀 Wind Shadow — Calm Pocket</b><br><br>
+      Protected from wind — panfish and suspended fish hold here.<br><br>
+      <b>Setup:</b> Float/bobber rig or light jig.<br>
+      <b>Species:</b> Crappie, bluegill, perch.<br>
+      <b>Tip:</b> Fish slow — these fish aren't chasing.
+    </div>`).addTo(map);
+
+  // Animated wind arrow at pond center
+  const arrowHTML=`<div style="transform:rotate(${windDirDeg-90}deg);font-size:22px;filter:drop-shadow(0 0 4px rgba(255,255,255,.4))">➤</div>`;
+  const windIcon=L.divIcon({html:`<div style="text-align:center">${arrowHTML}<div style="font-size:9px;color:#fff;font-family:Inter,sans-serif;text-shadow:0 1px 3px #000;margin-top:-4px">${Math.round(windSpeed)}mph</div></div>`,iconSize:[40,40],iconAnchor:[20,20],className:''});
+  pondMarker=L.marker([lat,lon],{icon:windIcon}).addTo(map);
+  windLayers=[dw,uw,ws];
+
+  // Zoom to pond
+  map.flyTo([lat,lon],Math.max(zoom,12),{duration:.8});
+}
+
+// ── POND TAP ──
+let currentWindDir=180,currentWindSpeed=8;
+async function onMapTap(lat,lon){
+  const panel=$('pond-panel');
+  $('pond-name').textContent='Analyzing…';
+  $('pond-sub').textContent='Looking up water body…';
+  $('pond-zones').innerHTML='';
+  panel.classList.add('visible');
+
+  // Switch to map tab
+  switchTabSilent('map');
+
+  try{
+    // Reverse geocode with Nominatim
+    const geo=await fetchWithTimeout(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=16`,8000);
+    const name=geo.name||geo.display_name?.split(',')[0]||'Unnamed water';
+    const type=geo.type||geo.class||'';
+    const isWater=['water','lake','pond','reservoir','river','stream','wetland','bay','basin','pool'].some(w=>type.includes(w)||geo.class==='waterway'||(geo.address&&Object.values(geo.address).some(v=>typeof v==='string'&&['lake','pond','reservoir','creek','river'].some(w=>v.toLowerCase().includes(w)))));
+
+    $('pond-name').textContent=name;
+
+    if(!isWater){
+      // Still draw zones — user may have tapped near a pond
+      $('pond-sub').textContent=`${geo.display_name?.split(',').slice(0,2).join(',') || 'Kansas'} — tap the water itself for best results`;
+    } else {
+      $('pond-sub').textContent=`${type.replace('_',' ')} · Wind from ${compass(currentWindDir)} at ${Math.round(currentWindSpeed)} mph`;
+    }
+
+    // Draw wind zones regardless (user tapped intentionally)
+    drawWindZones(lat,lon,currentWindDir,currentWindSpeed,name);
+
+    // Zone chips
+    const downwindLabel=compass((currentWindDir+180)%360);
+    $('pond-zones').innerHTML=`
+      <span class="pond-zone hot">🎯 Cast ${downwindLabel} shore</span>
+      <span class="pond-zone warm">🏹 ${compass(currentWindDir)} point</span>
+      <span class="pond-zone cold">🌀 Wind shadow</span>`;
+
+    // Update map tab sheet detail
+    $('pond-detail-sheet').innerHTML=`
+      <div style="font-size:14px;font-weight:600;margin-bottom:4px">${name}</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:10px">Wind from ${compass(currentWindDir)} at ${Math.round(currentWindSpeed)} mph · Tap zones on map for casting tips</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div style="flex:1;min-width:120px;padding:10px;background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);border-radius:10px">
+          <div style="font-size:11px;color:#81c784;font-weight:600;margin-bottom:4px">🎯 Best Spot</div>
+          <div style="font-size:12px;color:var(--text2)">Downwind (${downwindLabel}) shore. Baitfish stack here. Cast parallel to bank.</div>
+        </div>
+        <div style="flex:1;min-width:120px;padding:10px;background:rgba(255,193,7,.08);border:1px solid rgba(255,193,7,.25);border-radius:10px">
+          <div style="font-size:11px;color:#ffd54f;font-weight:600;margin-bottom:4px">🏹 Ambush Zone</div>
+          <div style="font-size:12px;color:var(--text2)">Upwind (${compass(currentWindDir)}) points and structure. Jig tight to bottom.</div>
+        </div>
+      </div>`;
+
+  }catch(e){
+    $('pond-name').textContent='Water body';
+    $('pond-sub').textContent='Could not reverse geocode — zones drawn from tap location';
+    drawWindZones(lat,lon,currentWindDir,currentWindSpeed,'Selected point');
+    $('pond-zones').innerHTML=`<span class="pond-zone hot">🎯 Cast ${compass((currentWindDir+180)%360)} shore</span>`;
+  }
+}
+
+function closePondPanel(){$('pond-panel').classList.remove('visible')}
+
+// ── LOCATE ME ──
+function locateMe(){
+  if(!navigator.geolocation){alert('Geolocation not supported');return;}
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const{latitude:lat,longitude:lon}=pos.coords;
+    map.flyTo([lat,lon],13,{duration:1});
+    onMapTap(lat,lon);
+  },()=>alert('Could not get location — check browser permissions'));
+}
+
+// ── SEARCH ──
+let searchTimer=null;
+function setupSearch(){
+  const input=$('search-input'),results=$('search-results');
+  input.addEventListener('input',()=>{
+    clearTimeout(searchTimer);
+    const q=input.value.trim();
+    if(q.length<3){results.classList.remove('visible');return;}
+    searchTimer=setTimeout(async()=>{
+      try{
+        const data=await fetchWithTimeout(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q+' Kansas')}&format=json&limit=5&countrycodes=us`,6000);
+        results.innerHTML=data.map(r=>`<div class="search-result-item" onclick="goToResult(${r.lat},${r.lon},'${r.display_name.replace(/'/g,"\\'")}')">
+          <div class="sr-name">${r.display_name.split(',')[0]}</div>
+          <div class="sr-sub">${r.display_name.split(',').slice(1,3).join(',')}</div>
+        </div>`).join('');
+        results.classList.add('visible');
+      }catch(e){results.innerHTML='<div class="search-result-item"><div class="sr-sub">Search failed</div></div>';results.classList.add('visible');}
+    },400);
+  });
+  document.addEventListener('click',e=>{if(!e.target.closest('#search-bar'))results.classList.remove('visible');});
+}
+function goToResult(lat,lon,name){
+  $('search-results').classList.remove('visible');
+  $('search-input').value='';
+  map.flyTo([lat,lon],13,{duration:1});
+  onMapTap(parseFloat(lat),parseFloat(lon));
+}
+
+// ── TAB SWITCHING ──
+function switchTab(id,btn){
+  ['forecast','map','tackle','outlook'].forEach(t=>$('tab-'+t).classList.add('hidden'));
+  $('tab-'+id).classList.remove('hidden');
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  if(id==='map'){
+    show('search-bar');
+    $('sheet').classList.add('sheet-map');
+    $('tap-hint').classList.add('visible');
+    setTimeout(()=>$('tap-hint').classList.remove('visible'),3000);
+  } else {
+    hide('search-bar');
+    $('sheet').classList.remove('sheet-map');
+    $('pond-panel').classList.remove('visible');
+  }
+  // Scroll back to top when switching tabs
+  $('sheet-scroll').scrollTop=0;
+  map.invalidateSize();
+}
+function switchTabSilent(id){
+  ['forecast','map','tackle','outlook'].forEach(t=>$('tab-'+t).classList.add('hidden'));
+  $('tab-'+id).classList.remove('hidden');
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b=>{
+    if(b.textContent.toLowerCase().includes(id))b.classList.add('active');
+  });
+  if(id==='map'){
+    show('search-bar');
+    $('sheet').classList.add('sheet-map');
+  } else {
+    $('sheet').classList.remove('sheet-map');
+  }
+  map.invalidateSize();
+}
+
+// ── TACKLE ENGINE ─────────────────────────────────────────────────────────────
+const SPECIES_KANSAS=['Bass (Largemouth)','Bass (Smallmouth)','Catfish','Crappie','Walleye','Bluegill','Carp'];
+let tackleState={curH:null,trend:null,activeSpecies:'Bass (Largemouth)'};
+
+// Color palettes for different conditions
+const COLORS={
+  natural:  [{hex:'#4a7c3f',name:'Green Pumpkin'},{hex:'#8b6914',name:'Brown'},{hex:'#c0c0c0',name:'Shad/Silver'},{hex:'#3a5a40',name:'Watermelon'}],
+  bright:   [{hex:'#e8f505',name:'Chartreuse'},{hex:'#ff6600',name:'Orange'},{hex:'#ffffff',name:'White'},{hex:'#ff0000',name:'Red'}],
+  dark:     [{hex:'#1a1a2e',name:'Black'},{hex:'#4b0082',name:'Purple'},{hex:'#2c1810',name:'Dark Brown'},{hex:'#000080',name:'Midnight Blue'}],
+  reaction: [{hex:'#ff6b35',name:'Fire Tiger'},{hex:'#ffcc00',name:'Chartreuse/Black'},{hex:'#ff1493',name:'Pink'},{hex:'#00ced1',name:'Teal/Silver'}],
+  neutral:  [{hex:'#d4a96a',name:'Crawfish'},{hex:'#6b8e23',name:'Olive'},{hex:'#a0522d',name:'Pumpkin'},{hex:'#708090',name:'Smoke'}],
+};
+
+function getBaitColors(waterClarity,lightLevel,temp){
+  // Clear water + bright = natural. Stained/dark = bright. Night/overcast = dark/reaction.
+  if(waterClarity==='Clear'){
+    if(lightLevel==='bright')return[...COLORS.natural,...COLORS.neutral.slice(0,2)];
+    return[...COLORS.natural,...COLORS.dark.slice(0,2)];
+  }
+  if(waterClarity==='Lightly Stained'){
+    if(lightLevel==='bright')return[...COLORS.neutral,...COLORS.bright.slice(0,2)];
+    return[...COLORS.bright,...COLORS.natural.slice(0,2)];
+  }
+  if(waterClarity==='Stained'){
+    return[...COLORS.bright,...COLORS.reaction.slice(0,2)];
+  }
+  // Muddy
+  return[...COLORS.bright,...COLORS.reaction];
+}
+
+function getWaterClarity(h){
+  const t=h.windSpeed*.4+(h.cloudCover<30?0:8)+(h.precipProb>50?15:0);
+  return t<12?'Clear':t<25?'Lightly Stained':t<40?'Stained':'Muddy';
+}
+function getLightLevel(h){
+  const sun=sunTimes(new Date());
+  if(h.hour<5||h.hour>21)return'night';
+  if(h.hour<sun.sunrise+1||h.hour>sun.sunset-1)return'low';
+  if(h.cloudCover>70)return'overcast';
+  return'bright';
+}
+
+function getBaitsForSpecies(species,h,trend,clarity,light){
+  const temp=h.tempF,ws=h.windSpeed,cloud=h.cloudCover;
+  const isFalling=trend==='falling',isRising=trend==='rising';
+  const colors=getBaitColors(clarity,light,temp);
+  const topColors=colors.slice(0,4);
+  const altColors=colors.slice(2,5);
+
+  // Helper to build a bait card object
+  const bait=(name,conf,why,tip,colorSet,sizes)=>({name,conf,why,tip,colors:colorSet,sizes});
+
+  if(species==='Bass (Largemouth)'){
+    const baits=[];
+    // Topwater window
+    if((h.hour<8||h.hour>18)&&temp>60&&cloud<70){
+      baits.push(bait('Topwater Popper / Frog','high',
+        `Low light + ${temp<75?'warm':'hot'} water = prime topwater window. Bass are shallow and aggressive.`,
+        `Work it slow with long pauses. Let the rings die out completely before moving.`,
+        clarity==='Clear'?COLORS.natural.slice(0,2).concat([{hex:'#ffffff',name:'White'},{hex:'#000000',name:'Black'}]):
+          [{hex:'#ffffff',name:'White'},{hex:'#000000',name:'Black'},{hex:'#e8f505',name:'Chartreuse'},{hex:'#ff6600',name:'Orange'}],
+        ['3/8 oz','1/2 oz']));
+    }
+    if(temp>=60&&temp<=85){
+      baits.push(bait('Spinnerbait','high',
+        `${ws>8?'Wind creating chop — perfect':'Moderate conditions'} for spinnerbaits. Vibration triggers reactionary strikes.`,
+        `Cast to the downwind shore and retrieve with the wind. Use willow blades in clear water, Colorado in stained.`,
+        clarity==='Clear'?[{hex:'#c0c0c0',name:'Silver/White'},{hex:'#c5a028',name:'Gold/Chartreuse'},...COLORS.natural.slice(0,2)]:
+          [{hex:'#e8f505',name:'Chartreuse/White'},{hex:'#ff6600',name:'Orange/Gold'},{hex:'#ffffff',name:'All White'},{hex:'#ffcc00',name:'Yellow'}],
+        ['3/8 oz','1/2 oz','3/4 oz']));
+    }
+    if(temp>=55){
+      const conf=isFalling?'high':isRising?'low':'med';
+      baits.push(bait('Soft Plastic Worm (Texas/Ned Rig)',conf,
+        `${isFalling?'Pre-front feeding frenzy — worms are deadly right now.':isRising?'Post-front: bass tight to cover. Finesse worm on a Ned rig.':'All-around producer in current conditions.'}`,
+        `${clarity==='Clear'?'Natural colors. 4–5" in clear water.':'Go 6–10" in stained water. Bold colors show up better.'} Drag slowly on bottom.`,
+        clarity==='Clear'?COLORS.natural:COLORS.bright.slice(0,2).concat(COLORS.natural.slice(0,2)),
+        ['4"','6"','7"','10"']));
+    }
+    if(temp<65||isRising){
+      baits.push(bait('Jig (Flipping/Finesse)',isRising?'high':'med',
+        `${isRising?'Post-front bass go deep and tight to structure — jigs are the #1 post-front bait.':'Cold/cool water: bass hold tight to bottom structure.'}`,
+        `Pitch to dock corners, laydowns, rock piles. Hop it once then let it sit — the fall triggers the bite.`,
+        temp<55?COLORS.dark:COLORS.neutral,
+        ['3/8 oz','1/2 oz','3/4 oz']));
+    }
+    if(temp>65&&temp<90){
+      baits.push(bait('Crankbait (Squarebill/Lipless)',isFalling?'high':'med',
+        `${isFalling?'Falling pressure activates schooling bass — crankbaits cover water fast.':'Good mid-temp bait for active fish.'}`,
+        `Match the hatch — shad colors in open water, crawfish colors near rocky structure and rip-rap.`,
+        cloud>50?COLORS.reaction:clarity==='Clear'?[{hex:'#c0c0c0',name:'Shad'},{hex:'#a0522d',name:'Crawfish'},{hex:'#3a7ebf',name:'Blue Shad'},{hex:'#4a7c3f',name:'Chartreuse Shad'}]:COLORS.bright,
+        ['1/4 oz (shallow)','1/2 oz (medium)','3/4 oz (deep)']));
+    }
+    return baits;
+  }
+
+  if(species==='Bass (Smallmouth)'){
+    return[
+      bait('Tube Jig',temp<65?'high':'med',
+        `Smallmouth staple — mimics crayfish perfectly. Best in rocky/gravel areas.`,
+        `Drag on bottom, occasional hop. Smoke and green pumpkin in clear, darker in stained.`,
+        clarity==='Clear'?[{hex:'#c0c0c0',name:'Smoke'},{hex:'#4a7c3f',name:'Green Pumpkin'},{hex:'#8b6914',name:'Brown'},...COLORS.neutral.slice(0,1)]:COLORS.bright,
+        ['3/16 oz','1/4 oz','3/8 oz']),
+      bait('Drop Shot',clarity==='Clear'?'high':'med',
+        `Clear-water finesse rig — smallmouth can't resist a hovering bait at their eye level.`,
+        `Use 6–8 lb fluorocarbon. Shake the rod tip — don't move the bait much. Try ledges and points.`,
+        COLORS.natural.concat([{hex:'#c0c0c0',name:'Shad'}]),
+        ['4" Roboworm','3" Minnow','2.5" Shad']),
+      bait('Ned Rig','high',
+        `The "do nothing" bait. Stands straight up on bottom — drives smallmouth crazy.`,
+        `Cast, let it sink, drag slowly. It catches fish when nothing else will.`,
+        COLORS.natural.slice(0,3).concat(COLORS.neutral.slice(0,1)),
+        ['2.75"','3.5"','4"']),
+    ];
+  }
+
+  if(species==='Catfish'){
+    const isNight=light==='night';
+    return[
+      bait('Cut Shad / Skipjack',isNight?'high':'med',
+        `Fresh cut bait is the #1 catfish bait in Kansas. ${isNight?'Night fishing is prime for big blues.':'Active in current conditions.'}`,
+        `Fish on bottom with a slip sinker rig. Downwind shore concentrates baitfish — best catfish spots.`,
+        [{hex:'#c0c0c0',name:'Fresh/Silver'},{hex:'#ff6600',name:'Bloody chunks'}],
+        ['2–3" chunk']),
+      bait('Chicken Liver','med',
+        `Strong scent trail works great in stained/muddy water. Flows downstream to feeding cats.`,
+        `Use a treble hook inside a mesh bag to keep it on. Fish in current seams.`,
+        [{hex:'#8b0000',name:'Dark Red/Maroon'}],
+        ['Golf ball size']),
+      bait('Stink Bait / Dip Bait',temp>65?'high':'low',
+        `${temp>65?'Warm water amplifies scent dispersal — catfish find it fast.':'Scent disperses slower in cold water.'}`,
+        `Use a sponge or dip tube hook. Fish near channel bends or deep holes.`,
+        [{hex:'#4b0082',name:'Purple/Stink'},{hex:'#8b6914',name:'Natural/Cheese'}],
+        ['Tube hook / sponge']),
+    ];
+  }
+
+  if(species==='Crappie'){
+    return[
+      bait('Tube Jig / Marabou Jig','high',
+        `#1 crappie bait. Light jig near brush piles, docks, and submerged timber.`,
+        `Vertical jigging is deadly — lower straight down on your sonar mark. Tiny hops only.`,
+        light==='bright'?[{hex:'#ffffff',name:'White'},{hex:'#e8f505',name:'Chartreuse'},{hex:'#ff69b4',name:'Pink'},{hex:'#c0c0c0',name:'Silver'}]:
+          [{hex:'#000080',name:'Black/Blue'},{hex:'#ff69b4',name:'Pink'},{hex:'#4b0082',name:'Purple'},{hex:'#ff6600',name:'Orange'}],
+        ['1/32 oz','1/16 oz','1/8 oz']),
+      bait('Small Minnow (Live or Artificial)','high',
+        `Live minnows under a slip float — nearly impossible for crappie to resist.`,
+        `Set float so minnow hangs 1–2 ft above brush. Cast past the spot, drift in.`,
+        [{hex:'#c0c0c0',name:'Natural Silver'},{hex:'#ffffff',name:'Pearl White'}],
+        ['1–2" minnow']),
+      bait('Curly Tail Grub','med',
+        `Easy action — tail vibrates on any retrieve. Great in the wind shadow calm areas.`,
+        `Slow retrieve or vertical drop. Match the water color — bright in stained, natural in clear.`,
+        clarity==='Clear'?[{hex:'#c0c0c0',name:'Smoke'},{hex:'#ffffff',name:'White'},...COLORS.natural.slice(0,1)]:
+          [{hex:'#e8f505',name:'Chartreuse'},{hex:'#ff69b4',name:'Pink'},{hex:'#ffffff',name:'White'}],
+        ['1.5"','2"','3"']),
+    ];
+  }
+
+  if(species==='Walleye'){
+    return[
+      bait('Jig + Live Minnow',light!=='bright'?'high':'med',
+        `${light!=='bright'?'Low light = prime walleye time. They hunt by feel and low-light vision.':'Walleye go deep midday — find the thermocline.'}`,
+        `Jig on bottom in 8–20 ft. Drag and pause. Tip with a minnow or nightcrawler for scent.`,
+        [{hex:'#e8f505',name:'Chartreuse'},{hex:'#ff6600',name:'Orange'},{hex:'#ffffff',name:'White'},{hex:'#ff69b4',name:'Pink'}],
+        ['1/4 oz','3/8 oz','1/2 oz']),
+      bait('Crawler Harness / Worm Rig','high',
+        `Nightcrawler with spinner blade — covers water and adds flash/scent combo.`,
+        `Slow troll or drift across flats and points. Blade color: gold in stained, silver in clear.`,
+        [{hex:'#ff6600',name:'Orange/Gold'},{hex:'#c0c0c0',name:'Silver/White'},{hex:'#ff0000',name:'Red'}],
+        ['Size 2–4 hooks']),
+      bait('Crankbait (Deep Diving)','med',
+        `Search bait for finding active fish. Match dive depth to where fish are suspended.`,
+        `Troll at 1.5–2 mph over points and channel edges. Natural shad/perch colors.`,
+        [{hex:'#c0c0c0',name:'Shad'},{hex:'#8b6914',name:'Perch'},{hex:'#e8f505',name:'Chartreuse/Gold'}],
+        ['5/8 oz','3/4 oz']),
+    ];
+  }
+
+  if(species==='Bluegill'){
+    return[
+      bait('Worm on Small Hook','high',
+        `You really can\'t beat a simple red worm for bluegill. Works in every condition.`,
+        `Fish 2–4 ft deep near weeds, docks, fallen timber. Use a bobber — watch for subtle dips.`,
+        [{hex:'#8b0000',name:'Red Worm'},{hex:'#d4a96a',name:'Nightcrawler piece'}],
+        ['Size 6–10 hook']),
+      bait('Tiny Jig / Fly','high',
+        `Small jigs in the 1/32–1/16 oz range crush bluegill. Action imitates insects and nymphs.`,
+        `Bobber rig 2 ft deep near the wind shadow zone. Chartreuse and white are money colors.`,
+        [{hex:'#e8f505',name:'Chartreuse'},{hex:'#ffffff',name:'White'},{hex:'#ff0000',name:'Red'},{hex:'#ff69b4',name:'Pink'}],
+        ['1/32 oz','1/64 oz']),
+      bait('Crickets / Grasshoppers',temp>65?'high':'low',
+        `${temp>65?'Warm season — insects are active and bluegill key on them heavily.':'Too cold for insects to be effective.'}`,
+        `Hook through the thorax, use a small bobber. Fish near grassy banks.`,
+        [{hex:'#8b6914',name:'Natural Brown'}],
+        ['Live bait']),
+    ];
+  }
+
+  if(species==='Carp'){
+    return[
+      bait('Corn (Sweet Corn)',temp>55?'high':'med',
+        `Kansas carp love corn — simple and deadly. Carp root along muddy bottoms.`,
+        `Fish on the bottom with a hair rig or directly on hook. Feed a handful of loose corn around your bait.`,
+        [{hex:'#ffcc00',name:'Yellow/Sweet Corn'}],
+        ['Size 4–8 hook']),
+      bait('Boilie (Fishmeal or Fruit)',  'med',
+        `European method — round dough balls that sit on bottom. Great for bigger fish.`,
+        `Use a hair rig. Strawberry, pineapple, or fishmeal attract carp from distance via scent.`,
+        [{hex:'#ff1493',name:'Strawberry/Pink'},{hex:'#ffcc00',name:'Pineapple/Yellow'},{hex:'#8b6914',name:'Fishmeal/Brown'}],
+        ['10–14mm boilie']),
+      bait('Bread / Dough Bait','high',
+        `Cheapest and most effective — carp will hammer a piece of bread in the right spot.`,
+        `Use floating bread crust on surface (great to watch!) or dough on bottom. Simple and deadly.`,
+        [{hex:'#f5e6c8',name:'White Bread/Dough'}],
+        ['Thumbnail size']),
+    ];
+  }
+
+  return[];
+}
+
+let activeTackleSpecies='Bass (Largemouth)';
+function renderTackle(h,trend){
+  const clarity=getWaterClarity(h),light=getLightLevel(h),temp=h.tempF,ws=h.windSpeed;
+  tackleState={curH:h,trend,clarity,light};
+
+  // Banner
+  $('tk-banner').innerHTML=`
+    <div class="cb-item"><span class="cb-dot" style="background:${clarity==='Clear'?'#4fc3f7':clarity==='Lightly Stained'?'#81c784':clarity==='Stained'?'#ffb74d':'#a1887f'}"></span>${clarity} Water</div>
+    <div class="cb-item"><span class="cb-dot" style="background:${temp<50?'#64b5f6':temp<65?'#81c784':temp<80?'#ff8a65':'#f44336'}"></span>${Math.round(temp)}°F</div>
+    <div class="cb-item"><span class="cb-dot" style="background:${trend==='rising'?'#4caf50':trend==='falling'?'#f44336':'#ffc107'}"></span>Pressure ${trend==='rising'?'Rising ↑':trend==='falling'?'Falling ↓':'Steady →'}</div>
+    <div class="cb-item"><span class="cb-dot" style="background:${ws<8?'#4caf50':ws<16?'#ffc107':'#f44336'}"></span>${Math.round(ws)} mph wind</div>
+    <div class="cb-item"><span>💡</span>${light==='bright'?'Full Sun':light==='low'?'Low Light':light==='night'?'Night':'Overcast'}</div>`;
+
+  // Clarity visual bar
+  const clarityPct=clarity==='Clear'?20:clarity==='Lightly Stained'?45:clarity==='Stained'?70:95;
+  const clarityColor=clarity==='Clear'?'#4fc3f7':clarity==='Lightly Stained'?'#81c784':clarity==='Stained'?'#ffb74d':'#a1887f';
+  $('tk-clarity').innerHTML=`
+    <div class="water-clarity-bar">
+      <div class="wc-label">Clarity</div>
+      <div class="wc-bar-bg"><div class="wc-bar" style="width:${clarityPct}%;background:${clarityColor}"></div></div>
+      <div class="wc-val" style="color:${clarityColor}">${clarity}</div>
+    </div>`;
+
+  // Summary
+  const summaryText=
+    clarity==='Clear'&&temp>=60&&temp<80&&trend!=='rising'?'Prime conditions — go finesse with natural colors. Fish are sharp-eyed and picky.':
+    clarity==='Muddy'||clarity==='Stained'?`Reduced visibility — go LOUD and BRIGHT. Use rattles, vibration, and chartreuse/orange to help fish locate your bait.`:
+    trend==='falling'?'Pre-front bite is on — fish are feeding up. Throw moving baits fast and cover water.':
+    trend==='rising'?'Post-front slowdown — downsize everything. Finesse rigs near bottom structure win.':
+    temp<50?'Cold water = slow everything down. Fish are lethargic. Smallest presentations, slowest retrieves.':
+    temp>85?'Heat stress — fish deep near thermocline. Dawn/dusk windows only for shallow action.':
+    'Stable conditions — fish are in their normal patterns. Match the hatch and cover water.';
+  $('tk-summary').innerHTML=`<div class="tackle-summary-title">🎯 Today's Tackle Strategy</div><div class="tackle-summary-text">${summaryText}</div>`;
+
+  // Species tabs
+  $('tk-species-tabs').innerHTML=SPECIES_KANSAS.map(s=>`
+    <button class="sp-tab${s===activeTackleSpecies?' active':''}" onclick="selectSpecies('${s}')">${s}</button>`).join('');
+
+  renderBaits(h,trend,clarity,light);
+  hide('tk-loading');hide('tk-err');show('tk-content');
+}
+
+function selectSpecies(s){
+  activeTackleSpecies=s;
+  document.querySelectorAll('.sp-tab').forEach(b=>{b.classList.toggle('active',b.textContent===s);});
+  if(tackleState.curH)renderBaits(tackleState.curH,tackleState.trend,tackleState.clarity,tackleState.light);
+}
+
+function renderBaits(h,trend,clarity,light){
+  const baits=getBaitsForSpecies(activeTackleSpecies,h,trend,clarity,light);
+  if(!baits.length){$('tk-baits').innerHTML='<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px">No specific recommendations for current conditions.</div>';return;}
+
+  // Sort: high conf first
+  const order={high:0,med:1,low:2};
+  baits.sort((a,b)=>order[a.conf]-order[b.conf]);
+
+  $('tk-baits').innerHTML=`
+    <div class="bait-section-title">Top picks for ${activeTackleSpecies}</div>`+
+    baits.map(b=>`
+    <div class="bait-card conf-${b.conf}">
+      <div class="bait-top">
+        <div class="bait-name">${b.name}</div>
+        <div class="bait-conf">${b.conf==='high'?'🔥 High Confidence':b.conf==='med'?'✅ Good Pick':'⚠️ Backup'}</div>
+      </div>
+      <div class="bait-why">${b.why}</div>
+      <div class="bait-section-title" style="margin-top:6px">Best Colors</div>
+      <div class="color-row">${b.colors.map(c=>`
+        <div class="color-swatch" style="background:${c.hex}18;border-color:${c.hex}44;color:${c.hex}">
+          <span class="swatch-dot" style="background:${c.hex}"></span>${c.name}
+        </div>`).join('')}</div>
+      ${b.sizes?`<div class="bait-section-title" style="margin-top:4px">Sizes / Weights</div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">${b.sizes.map(s=>`<span style="padding:3px 8px;border-radius:8px;font-size:10px;background:rgba(255,255,255,.06);color:var(--text3)">${s}</span>`).join('')}</div>`:''}
+      <div class="bait-tip">💡 ${b.tip}</div>
+    </div>`).join('');
+}
+
+// ── BOOT ──
+async function init(){
+  // Reset
+  show('f-loading');hide('f-err');hide('f-content');
+  show('ol-loading');hide('ol-content');
+  show('tk-loading');hide('tk-err');hide('tk-content');
+  // Reset to loading state
+  $('sheet').classList.remove('sheet-map');
+  $('sheet-scroll').scrollTop=0;
+
+  try{
+    const raw=await fetchWeather(LAT,LON);
+    const allH=parseHourly(raw);
+    const date=new Date();
+    const today=localDateStr(0),todayH=allH.filter(h=>h.dateStr===today);
+    if(!todayH.length)throw new Error(`No data for ${today}`);
+    const nowH=localHour();
+    const nowIdx=allH.findIndex(h=>h.dateStr===today&&h.hour===nowH);
+    const cur=allH[nowIdx>=0?nowIdx:0]??todayH[0];
+    const curTrend=pressureTrend(allH,nowIdx>=0?nowIdx:0);
+
+    // Store current wind for map zones
+    currentWindDir=cur.windDir??180;
+    currentWindSpeed=cur.windSpeed??8;
+
+    renderForecast(allH,date,LAT,LON);
+    renderOutlook(allH,date);
+    renderTackle(cur,curTrend);
+
+    // Draw initial wind zones on Kansas center
+    drawWindZones(LAT,LON,currentWindDir,currentWindSpeed,'Kansas (tap a pond to analyze it)');
+
+  }catch(e){
+    console.error('Kansas Angler:',e);
+    const msg=e.name==='AbortError'?'Request timed out.':e.message;
+    hide('f-loading');
+    const em=$('f-err-msg');if(em)em.textContent=msg;
+    show('f-err');hide('ol-loading');
+  }
+}
+
+// Init map + app
+initMap();
+setupSearch();
+init();
+</script>
+</body>
+</html>
