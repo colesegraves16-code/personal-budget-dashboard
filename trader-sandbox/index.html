@@ -3,6 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Trader Sandbox">
 <meta name="theme-color" content="#0b1322" id="themeColor">
 <title>Trader Sandbox</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b1322'/%3E%3Cpath d='M11 6v20M21 9v17' stroke='%2394a3bd' stroke-width='2'/%3E%3Crect x='8' y='10' width='6' height='11' rx='1.5' fill='%2322d39b'/%3E%3Crect x='18' y='13' width='6' height='8' rx='1.5' fill='%23ff5c7a'/%3E%3C/svg%3E">
@@ -74,7 +78,7 @@ body::after { content: ""; position: fixed; inset: -20vh -20vw; z-index: -1; poi
     radial-gradient(45vmax 35vmax at 92% 18%, var(--aura-1), transparent 70%),
     radial-gradient(50vmax 40vmax at 50% 105%, var(--aura-1), transparent 70%); }
 ::selection { background: var(--accent); color: #fff; }
-.wrap { position: relative; max-width: 880px; margin: 0 auto; display: grid; gap: 16px; padding-top: 18px; }
+.wrap { position: relative; width: 100%; max-width: 1680px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; padding-top: 18px; align-content: start; }
 h1, h2 { font-family: var(--f-display); margin: 0; letter-spacing: -0.02em; text-wrap: balance; }
 h2 { font-size: 1.2rem; font-weight: 600; }
 p { margin: 0; }
@@ -155,8 +159,8 @@ button:not(.primary):not(.buy):not(.pass):not(.rm):not(.theme-btn):hover:not(:di
 .px { text-align: right; }
 .px b { display: block; font-family: var(--f-display); font-size: 1.4rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 .px span { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
-.chart { position: relative; height: 320px; margin: 0 -6px; }
-@media (min-width: 700px) { .chart { height: 400px; } }
+.chart { position: relative; height: clamp(260px, 46vh, 640px); margin: 0 -6px; }
+@media (min-width: 700px) { .chart { height: clamp(340px, 52vh, 680px); } }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 0.78rem; color: var(--muted); font-weight: 600; }
 .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
 
@@ -213,6 +217,59 @@ button:not(.primary):not(.buy):not(.pass):not(.rm):not(.theme-btn):hover:not(:di
 .odds { display: flex; height: 12px; border-radius: 999px; overflow: hidden; background: var(--line); }
 .odds span { display: block; height: 100%; transition: width .5s ease; }
 .odds-key { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.8rem; font-weight: 700; }
+
+/* ---------- Responsive layout: phone → tablet → laptop → big screen ---------- */
+.view > * { min-width: 0; }
+/* Tablet: roomier spacing, wider gutters */
+@media (min-width: 700px) {
+  body { padding-left: max(28px, env(safe-area-inset-left, 0px)); padding-right: max(28px, env(safe-area-inset-right, 0px)); }
+  .wrap { gap: 20px; padding-top: 24px; }
+  .card { padding: 24px; }
+  .stage { padding: 24px; }
+  .holdings { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+}
+/* Laptop and up: header + tabs share one row, controls sit in a left rail beside the chart */
+@media (min-width: 1080px) {
+  body { padding-left: max(40px, env(safe-area-inset-left, 0px)); padding-right: max(40px, env(safe-area-inset-right, 0px)); }
+  .wrap { grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 24px; }
+  .brand { display: contents; }
+  .logo { grid-column: 1; grid-row: 1; }
+  .theme-btn { grid-column: 3; grid-row: 1; align-self: center; }
+  .tabs { grid-column: 2; grid-row: 1; justify-self: center; width: min(620px, 100%); align-self: center; }
+  .wrap > section, .wrap > footer { grid-column: 1 / -1; }
+  .view { grid-template-columns: minmax(340px, 400px) minmax(0, 1fr); align-items: start; gap: 20px !important; }
+  .view > .card:first-child { position: sticky; top: 96px; }
+  .view > .stage { grid-column: 2; grid-row: 1 / span 3; }
+  #time > .card:last-child { grid-column: 1; }
+  .view .form.four, .view .form.three { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .view .form.three > :last-child { grid-column: 1 / -1; }
+  /* Before a result shows, the controls use the full width */
+  .view:has(> .stage[hidden]) > .card:first-child { grid-column: 1 / -1; position: static; }
+  .view:has(> .stage[hidden]) .form.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .view:has(> .stage[hidden]) .form.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .view:has(> .stage[hidden]) .form.three > :last-child { grid-column: auto; }
+  .view:has(> .stage[hidden]) > .card:first-child .row, .view:has(> .stage[hidden]) > .card:first-child > .primary { max-width: 640px; }
+  #time:has(> .stage[hidden]) > .card:last-child { grid-column: 1 / -1; }
+  /* Future: the two plan panels sit side by side */
+  .stage { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stage > * { grid-column: 1 / -1; }
+  .stage > .plan { grid-column: auto; align-content: start; }
+  .plan .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* My buys: portfolio wide, buy form on the right */
+  #buys { grid-template-columns: minmax(0, 1fr) minmax(340px, 400px); }
+  #buys > .card:first-child { grid-column: 1; grid-row: 1; position: static; }
+  #buys > .card:last-child { grid-column: 2; grid-row: 1; position: sticky; top: 96px; }
+  #buys .form { grid-template-columns: 1fr; }
+}
+/* Big monitors and TVs: scale everything up a touch */
+@media (min-width: 1600px) {
+  html { font-size: 17px; } body { font-size: 16px; }
+  .view { grid-template-columns: minmax(380px, 440px) minmax(0, 1fr); }
+  #buys { grid-template-columns: minmax(0, 1fr) minmax(380px, 440px); }
+}
+@media (min-width: 2200px) { html { font-size: 19px; } body { font-size: 18px; } .wrap { max-width: 2100px; } }
+/* Short landscape phones: keep the chart usable */
+@media (max-height: 500px) and (orientation: landscape) { .chart { height: 78vh; } .tabs { position: static; } }
 footer { font-size: 0.8rem; color: var(--muted); max-width: 70ch; padding: 6px 2px; }
 [hidden] { display: none !important; }
 .skeleton { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-weight: 600; font-size: 0.9rem; }
@@ -563,7 +620,7 @@ function route() {
   document.querySelectorAll(".tabs a").forEach(a => a.setAttribute("aria-current", a.dataset.tab === view ? "page" : "false"));
   if (view === "buys") renderBuys(true);
 }
-addEventListener("hashchange", route);
+addEventListener("hashchange", () => { route(); scrollTo(0, 0); });
 
 // ---------- time machine ----------
 const tm = { entry: null, candles: null, avg: null, data: null, iD: -1, iEnd: -1, start: 0, guess: null, sig: null, anim: 0, amt: 1000 };
@@ -919,6 +976,7 @@ $("byGo").onclick = byGoSafe;
 if (!LWC) document.querySelectorAll(".chart").forEach(c => c.innerHTML = '<div class="skeleton">Charts didn’t load. Check your connection and refresh.</div>');
 syncTheme();
 route();
+requestAnimationFrame(() => scrollTo(0, 0)); // tabs are #links; don't let the browser jump past the header
 </script>
 </body>
 </html>
