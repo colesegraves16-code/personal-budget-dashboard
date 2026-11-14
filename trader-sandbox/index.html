@@ -84,9 +84,9 @@ p { margin: 0; }
 .theme-btn svg { width: 18px; height: 18px; }
 
 /* Tabs */
-.tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line);
+.tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line);
   position: sticky; top: calc(env(safe-area-inset-top, 0px) + 8px); z-index: 10; backdrop-filter: blur(10px); }
-.tabs a { text-align: center; padding: 9px 4px; border-radius: 10px; color: var(--muted); text-decoration: none; font-weight: 700; font-size: 0.9rem; transition: background-color .2s, color .2s, box-shadow .2s; }
+.tabs a { text-align: center; padding: 9px 4px; border-radius: 10px; color: var(--muted); text-decoration: none; font-weight: 700; font-size: 0.84rem; line-height: 1.25; transition: background-color .2s, color .2s, box-shadow .2s; }
 .tabs a[aria-current="page"] { background: var(--accent); color: var(--accent-text); box-shadow: 0 4px 18px -4px rgb(from var(--accent) r g b / calc(var(--glow) + .2)); }
 
 /* Cards */
@@ -181,6 +181,16 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 .hold .rm { grid-column: 2 / -1; justify-self: start; background: none; border: 0; padding: 4px 0 0; color: var(--muted); font-size: 0.78rem; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 .empty { text-align: center; padding: 22px 12px; color: var(--muted); border: 1px dashed var(--line); border-radius: 14px; }
 
+/* Future */
+.plan { display: grid; gap: 10px; padding: 14px; border-radius: 16px; background: var(--surface-2); }
+.plan h3 { margin: 0; font-family: var(--f-display); font-size: 1rem; font-weight: 600; }
+.ladder { display: grid; gap: 6px; }
+.rung { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 10px; align-items: center; font-weight: 700; font-size: 0.9rem; }
+.rung i { width: 10px; height: 10px; border-radius: 3px; }
+.rung b { font-family: var(--f-display); font-weight: 600; font-variant-numeric: tabular-nums; }
+.odds { display: flex; height: 12px; border-radius: 999px; overflow: hidden; background: var(--line); }
+.odds span { display: block; height: 100%; transition: width .5s ease; }
+.odds-key { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.8rem; font-weight: 700; }
 footer { font-size: 0.8rem; color: var(--muted); max-width: 70ch; padding: 6px 2px; }
 [hidden] { display: none !important; }
 .skeleton { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-weight: 600; font-size: 0.9rem; }
@@ -200,6 +210,7 @@ footer { font-size: 0.8rem; color: var(--muted); max-width: 70ch; padding: 6px 2
   <nav class="tabs" aria-label="Sections">
     <a href="#time" data-tab="time">Time machine</a>
     <a href="#whatif" data-tab="whatif">What if</a>
+    <a href="#future" data-tab="future">Future</a>
     <a href="#buys" data-tab="buys">My buys</a>
   </nav>
 
@@ -295,6 +306,72 @@ footer { font-size: 0.8rem; color: var(--muted); max-width: 70ch; padding: 6px 2
     </div>
   </section>
 
+  <!-- FUTURE -->
+  <section id="future" class="view" style="display:grid;gap:14px" hidden>
+    <div class="card">
+      <div class="intro">
+        <h2>Simulate where it could go next</h2>
+        <p class="muted small">Runs 2,000 possible futures built from the stock's own past daily moves, then gives you a day trader's game plan.</p>
+      </div>
+      <div class="form four">
+        <label for="fuTick">Stock <input id="fuTick" class="tick" value="NVDA" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go"></label>
+        <label for="fuAmt">Pretend money <input id="fuAmt" type="number" inputmode="decimal" min="1" step="1" value="1000"></label>
+        <label for="fuAhead">How far ahead
+          <select id="fuAhead">
+            <option value="1">Tomorrow</option>
+            <option value="5">1 week</option>
+            <option value="21" selected>1 month</option>
+            <option value="63">3 months</option>
+            <option value="252">1 year</option>
+          </select>
+        </label>
+        <label for="fuStyle">Trading style
+          <select id="fuStyle">
+            <option value="tight">Scalper (tight stop)</option>
+            <option value="swing" selected>Swing trader</option>
+            <option value="loose">Patient (wide stop)</option>
+          </select>
+        </label>
+      </div>
+      <div class="row">
+        <button class="primary" id="fuGo" type="button">Run the future</button>
+        <button id="fuRandom" type="button">Surprise me</button>
+      </div>
+      <div id="fuErr" class="msg" role="alert" hidden></div>
+    </div>
+
+    <div class="stage" id="fuStage" hidden>
+      <div class="stage-head">
+        <div><div class="sym" id="fuSym"></div><div class="sym-name" id="fuName"></div></div>
+        <div class="px"><b id="fuPx"></b><span id="fuWhen"></span></div>
+      </div>
+      <div class="chart" id="fuChart"></div>
+      <div class="legend">
+        <span><i style="background:var(--accent);height:3px;vertical-align:3px"></i>Middle outcome</span>
+        <span><i style="background:var(--bull);height:2px;vertical-align:3px"></i>Good case (1 in 4 do better)</span>
+        <span><i style="background:var(--bear);height:2px;vertical-align:3px"></i>Bad case (1 in 4 do worse)</span>
+        <span><i style="background:var(--muted);height:1px;vertical-align:3px"></i>Sample futures</span>
+      </div>
+      <div class="stats" id="fuStats"></div>
+
+      <div class="plan">
+        <h3>Day trader read</h3>
+        <div class="stats" id="fuSignals"></div>
+        <p class="small muted" id="fuSigNote"></p>
+      </div>
+
+      <div class="plan">
+        <h3 id="fuPlanTitle">Trade plan</h3>
+        <div class="ladder" id="fuLadder"></div>
+        <div class="odds" id="fuOdds" aria-hidden="true"></div>
+        <div class="odds-key" id="fuOddsKey"></div>
+        <p class="small muted" id="fuPlanNote"></p>
+      </div>
+
+      <div class="row"><button class="primary" id="fuAgain" type="button">Run it again</button><button id="fuSave" type="button">Pretend buy at today's price</button></div>
+    </div>
+  </section>
+
   <!-- MY BUYS -->
   <section id="buys" class="view" style="display:grid;gap:14px" hidden>
     <div class="card">
@@ -323,7 +400,7 @@ footer { font-size: 0.8rem; color: var(--muted); max-width: 70ch; padding: 6px 2
   </section>
 
   <footer>
-    Prices are daily candles from Yahoo Finance, delayed about 15 minutes, without dividends. Everything here is pretend money and for fun. It isn't financial advice, and past moves don't predict future ones.
+    Prices are daily candles from Yahoo Finance, delayed about 15 minutes, without dividends. Everything here is pretend money and for fun. It isn't financial advice, and past moves don't predict future ones. Future simulations replay the stock's past daily moves in random order, so they show a range of what's plausible, not what will happen.
     Charts by <a href="https://www.tradingview.com/" target="_blank" rel="noopener" style="color:inherit">TradingView Lightweight Charts</a>.
   </footer>
 </div>
@@ -459,7 +536,7 @@ function hexA(hex, a) { const h = hex.replace("#", ""); const n = parseInt(h.len
 // ---------- tabs ----------
 function route() {
   const t = (location.hash || "#time").slice(1);
-  const view = ["time", "whatif", "buys"].includes(t) ? t : "time";
+  const view = ["time", "whatif", "future", "buys"].includes(t) ? t : "time";
   document.querySelectorAll(".view").forEach(v => v.hidden = v.id !== view);
   document.querySelectorAll(".tabs a").forEach(a => a.setAttribute("aria-current", a.dataset.tab === view ? "page" : "false"));
   if (view === "buys") renderBuys(true);
@@ -627,6 +704,137 @@ const wiGoSafe = () => withBusy($("wiGo"), () => wiRun().catch(e => showErr($("w
 $("wiGo").onclick = wiGoSafe;
 ["wiTick", "wiDate", "wiAmt"].forEach(id => $(id).addEventListener("keydown", e => { if (e.key === "Enter") { e.target.blur(); wiGoSafe(); } }));
 $("wiSave").onclick = () => { if (!wi.last) return; addBuy(wi.last.sym, wi.last.date, wi.last.price, wi.last.amt); $("wiSave").textContent = "Added to my buys"; $("wiSave").disabled = true; };
+
+// ---------- future ----------
+// Monte Carlo: resample the stock's own daily log returns (last 2 years) to build many possible paths.
+const fu = { entry: null, data: null, last: null };
+const STYLES = { tight: { stop: 1, target: 2, name: "Scalper" }, swing: { stop: 1.5, target: 3, name: "Swing" }, loose: { stop: 2.5, target: 5, name: "Patient" } };
+const FU_PATHS = 2000;
+function atr(bars, n = 14) {
+  let s = 0; const k = bars.length;
+  for (let i = k - n; i < k; i++) { const b = bars[i], pc = bars[i - 1].close; s += Math.max(b.high - b.low, Math.abs(b.high - pc), Math.abs(b.low - pc)); }
+  return s / n;
+}
+const pctile = (sorted, q) => sorted[Math.min(sorted.length - 1, Math.max(0, Math.round(q * (sorted.length - 1))))];
+function futureDates(fromISO, n) {
+  const out = [], d = new Date(fromISO + "T12:00:00");
+  while (out.length < n) { d.setDate(d.getDate() + 1); const w = d.getDay(); if (w !== 0 && w !== 6) out.push(localISO(d)); }
+  return out;
+}
+function simulate(bars, days, stop, target) {
+  const look = bars.slice(-505), rets = [];
+  for (let i = 1; i < look.length; i++) rets.push(Math.log(look[i].close / look[i - 1].close));
+  const p0 = bars[bars.length - 1].close, R = rets.length;
+  const cols = Array.from({ length: days }, () => new Float64Array(FU_PATHS));
+  const ends = new Float64Array(FU_PATHS), dds = new Float64Array(FU_PATHS), samples = [];
+  let hitT = 0, hitS = 0, upDays = 0;
+  for (let p = 0; p < FU_PATHS; p++) {
+    let lp = 0, peak = p0, dd = 0, done = false; const keep = p < 14 ? [] : null;
+    for (let d = 0; d < days; d++) {
+      const r = rets[(Math.random() * R) | 0]; if (r > 0) upDays++;
+      lp += r; const px = p0 * Math.exp(lp);
+      cols[d][p] = px;
+      if (px > peak) peak = px; dd = Math.max(dd, 1 - px / peak);
+      if (!done) { if (px >= target) { hitT++; done = true; } else if (px <= stop) { hitS++; done = true; } }
+      if (keep) keep.push(px);
+    }
+    ends[p] = p0 * Math.exp(lp); dds[p] = dd; if (keep) samples.push(keep);
+  }
+  const bands = cols.map(c => { const s = Float64Array.from(c).sort(); return { p10: pctile(s, .1), p25: pctile(s, .25), p50: pctile(s, .5), p75: pctile(s, .75), p90: pctile(s, .9) }; });
+  const sEnds = Float64Array.from(ends).sort(), sDd = Float64Array.from(dds).sort();
+  let wins = 0; for (const e of ends) if (e > p0) wins++;
+  const dayVol = Math.sqrt(rets.reduce((a, r) => a + r * r, 0) / R);
+  return { p0, bands, samples, sEnds, win: wins / FU_PATHS, ddMed: pctile(sDd, .5), hitT: hitT / FU_PATHS, hitS: hitS / FU_PATHS, dayVol, histDays: R };
+}
+function addLine(entry, color, width, style, opts = {}) {
+  const api = entry.chart.addLineSeries({ lineWidth: width, lineStyle: style, priceLineVisible: false, lastValueVisible: !!opts.label, crosshairMarkerVisible: !!opts.label, title: opts.label || "" });
+  const s = { api, restyle() { api.applyOptions({ color: opts.alpha != null ? hexA(css(color), opts.alpha) : css(color) }); } };
+  s.restyle(); entry.series.push(s); return api;
+}
+async function fuRun(randomize) {
+  showErr($("fuErr"));
+  if (randomize) $("fuTick").value = PICKS[Math.floor(Math.random() * PICKS.length)];
+  const d = await load($("fuTick").value), bars = d.bars;
+  if (bars.length < 80) throw new Error(`Not enough price history for ${d.symbol} to simulate. Try a stock that's been trading longer.`);
+  const days = Number($("fuAhead").value), amt = amountFrom($("fuAmt"), 1000), st = STYLES[$("fuStyle").value] || STYLES.swing;
+  const a = atr(bars), last = bars[bars.length - 1], p0 = last.close;
+  const stop = Math.max(0.01, p0 - st.stop * a), target = p0 + st.target * a;
+  const sim = simulate(bars, days, stop, target), sig = signals(bars.map(b => b.close));
+  fu.data = d; fu.last = { sym: d.symbol, price: d.price || p0, amt };
+
+  $("fuStage").hidden = false;
+  $("fuSym").textContent = d.symbol; $("fuName").textContent = d.name;
+  const mid = sim.bands[days - 1].p50, aheadTxt = $("fuAhead").selectedOptions[0].textContent.toLowerCase();
+  $("fuPx").textContent = fmtPrice(mid); $("fuPx").className = tone(mid - p0);
+  $("fuWhen").textContent = `Middle outcome ${aheadTxt === "tomorrow" ? "by tomorrow" : "in " + aheadTxt}, from ${fmtPrice(p0)}`;
+
+  // chart: recent candles + percentile lines + a few sample paths
+  if (!fu.entry) fu.entry = makeChart($("fuChart"));
+  clearSeries(fu.entry);
+  const histN = Math.min(bars.length, Math.max(40, Math.min(160, days * 2))), hist = bars.slice(-histN);
+  const fd = futureDates(last.time, days), anchor = { time: last.time, value: p0 };
+  sim.samples.slice(0, days > 63 ? 8 : 12).forEach(path => addLine(fu.entry, "--muted", 1, LWC.LineStyle.Solid, { alpha: .35 }).setData([anchor, ...path.map((v, i) => ({ time: fd[i], value: v }))]));
+  const band = (k, color, w, style, label) => addLine(fu.entry, color, w, style, { label }).setData([anchor, ...sim.bands.map((b, i) => ({ time: fd[i], value: b[k] }))]);
+  band("p10", "--bear", 1, LWC.LineStyle.Dotted); band("p90", "--bull", 1, LWC.LineStyle.Dotted);
+  band("p25", "--bear", 2, LWC.LineStyle.Dashed, "Bad"); band("p75", "--bull", 2, LWC.LineStyle.Dashed, "Good");
+  band("p50", "--accent", 3, LWC.LineStyle.Solid, "Mid");
+  const candles = addCandles(fu.entry); candles.setData(hist);
+  candles.setMarkers([{ time: last.time, position: "aboveBar", color: css("--accent"), shape: "arrowDown", text: "Now" }]);
+  const lines = [[stop, "--bear", "Stop"], [target, "--bull", "Target"]].map(([price, c, title]) => candles.createPriceLine({ price, color: css(c), lineWidth: 1, lineStyle: LWC.LineStyle.LargeDashed, axisLabelVisible: true, title }));
+  fu.entry.series[fu.entry.series.length - 1].restyle = (orig => function () { orig.call(this); lines[0].applyOptions({ color: css("--bear") }); lines[1].applyOptions({ color: css("--bull") }); })(fu.entry.series[fu.entry.series.length - 1].restyle);
+  fu.entry.chart.timeScale().fitContent();
+
+  // outcome stats for the money
+  const end = q => amt * pctile(sim.sEnds, q) / p0;
+  $("fuStats").innerHTML = `
+    <div class="stat"><span>Chance you're up</span><b class="${tone(sim.win - .5)}">${Math.round(sim.win * 100)}%</b></div>
+    <div class="stat"><span>${fmtMoney(amt)} middle case</span><b class="${tone(end(.5) - amt)}">${fmtMoney(end(.5))}</b></div>
+    <div class="stat"><span>Rough outcome (1 in 10)</span><b class="${tone(end(.1) - amt)}">${fmtMoney(end(.1))}</b></div>
+    <div class="stat"><span>Great run (1 in 10)</span><b class="${tone(end(.9) - amt)}">${fmtMoney(end(.9))}</b></div>`;
+
+  // day trader read
+  const dayMove = sim.dayVol, atrPct = a / p0;
+  const pill = sig ? { UP: '<span class="pill up">Trending up</span>', DOWN: '<span class="pill down">Trending down</span>', MIXED: '<span class="pill mixed">No clear trend</span>' }[sig.call] : '<span class="pill mixed">Too new</span>';
+  $("fuSignals").innerHTML = `
+    <div class="stat"><span>Trend</span>${pill}</div>
+    <div class="stat"><span>RSI</span><b>${sig ? sig.rsi.toFixed(0) : "–"}</b></div>
+    <div class="stat"><span>Day range lately</span><b>${fmtPrice(a)} <span class="muted small">(${(atrPct * 100).toFixed(1)}%)</span></b></div>
+    <div class="stat"><span>Typical dip along the way</span><b class="bear">−${(sim.ddMed * 100).toFixed(1)}%</b></div>`;
+  const notes = [];
+  if (sig) {
+    notes.push(sig.call === "UP" ? "Price is above a rising 50-day average, so day traders would lean toward buying dips." :
+      sig.call === "DOWN" ? "Price is below a falling 50-day average, so day traders would avoid buying or wait for a turn." :
+      "Price and its 50-day average disagree, so there's no clean trend to ride.");
+    if (sig.rsi > 70) notes.push("RSI over 70 says it's stretched (overbought); chasing here is riskier.");
+    else if (sig.rsi < 30) notes.push("RSI under 30 says it's been sold hard (oversold); bounces are common but not guaranteed.");
+  }
+  notes.push(`It usually moves about ${(dayMove * 100).toFixed(1)}% a day, based on the last ${sim.histDays} trading days.`);
+  $("fuSigNote").textContent = notes.join(" ");
+
+  // trade plan
+  const shares = amt / p0, risk = (p0 - stop) * shares, reward = (target - p0) * shares, neither = 1 - sim.hitT - sim.hitS;
+  $("fuPlanTitle").textContent = `${st.name} trade plan`;
+  $("fuLadder").innerHTML = `
+    <div class="rung"><i style="background:var(--bull)"></i><span>Take profit at ${fmtPrice(target)}</span><b class="bull">+${fmtMoney(reward)}</b></div>
+    <div class="rung"><i style="background:var(--accent)"></i><span>Buy now at ${fmtPrice(p0)}</span><b>${fmtMoney(amt)}</b></div>
+    <div class="rung"><i style="background:var(--bear)"></i><span>Stop loss at ${fmtPrice(stop)}</span><b class="bear">${fmtMoney(-risk)}</b></div>`;
+  $("fuOdds").innerHTML = `<span style="width:${sim.hitT * 100}%;background:var(--bull)"></span><span style="width:${neither * 100}%;background:var(--muted);opacity:.45"></span><span style="width:${sim.hitS * 100}%;background:var(--bear)"></span>`;
+  $("fuOddsKey").innerHTML = `<span class="bull">Hits target ${Math.round(sim.hitT * 100)}%</span><span class="muted">Neither ${Math.round(neither * 100)}%</span><span class="bear">Hits stop ${Math.round(sim.hitS * 100)}%</span>`;
+  const ev = sim.hitT * reward - sim.hitS * risk;
+  $("fuPlanNote").textContent = `Stop is ${st.stop}× the typical day's range below, target is ${st.target}× above, so you risk ${fmtMoney(risk)} to make ${fmtMoney(reward)} (${(st.target / st.stop).toFixed(0)} to 1). ` +
+    `In these simulations the plan averages ${ev >= 0 ? "a gain" : "a loss"} of about ${fmtMoney(Math.abs(ev))} per trade from the exits alone. ` +
+    `Pro rule of thumb: size trades so one stop-out costs no more than 1–2% of your whole account. Exits are checked at each day's close.`;
+
+  $("fuSave").textContent = "Pretend buy at today's price"; $("fuSave").disabled = false;
+  $("fuStage").scrollIntoView({ behavior: reduceMotion() ? "auto" : "smooth", block: "start" });
+}
+const fuGoSafe = (btn, rnd) => withBusy(btn, () => fuRun(rnd).catch(e => showErr($("fuErr"), e)));
+$("fuGo").onclick = () => fuGoSafe($("fuGo"), false);
+$("fuRandom").onclick = () => fuGoSafe($("fuRandom"), true);
+$("fuAgain").onclick = () => fuGoSafe($("fuAgain"), false);
+["fuAhead", "fuStyle"].forEach(id => $(id).addEventListener("change", () => { if (fu.data) fuGoSafe($("fuGo"), false); }));
+["fuTick", "fuAmt"].forEach(id => $(id).addEventListener("keydown", e => { if (e.key === "Enter") { e.target.blur(); fuGoSafe($("fuGo"), false); } }));
+$("fuSave").onclick = () => { if (!fu.last) return; addBuy(fu.last.sym, localISO(new Date()), fu.last.price, fu.last.amt); $("fuSave").textContent = "Added to my buys"; $("fuSave").disabled = true; };
 
 // ---------- my buys ----------
 let livePrices = {};
