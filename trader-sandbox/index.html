@@ -270,7 +270,18 @@ button:not(.primary):not(.buy):not(.pass):not(.rm):not(.theme-btn):hover:not(:di
 @media (min-width: 2200px) { html { font-size: 19px; } body { font-size: 18px; } .wrap { max-width: 2100px; } }
 /* Short landscape phones: keep the chart usable */
 @media (max-height: 500px) and (orientation: landscape) { .chart { height: 78vh; } .tabs { position: static; } }
-footer { font-size: 0.8rem; color: var(--muted); max-width: 70ch; padding: 6px 2px; }
+footer.note { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: start;
+  padding: clamp(16px, 2vw, 26px) clamp(16px, 2.4vw, 32px); border-radius: 22px; border: 1px solid var(--line);
+  background: linear-gradient(135deg, rgb(124 58 237 / .14), transparent 55%), var(--glass);
+  -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+  font-size: clamp(0.92rem, 0.82rem + 0.35vw, 1.12rem); line-height: 1.6; color: var(--muted); }
+.note-icon { width: clamp(36px, 3vw, 46px); height: clamp(36px, 3vw, 46px); border-radius: 12px; display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; box-shadow: 0 8px 22px -8px rgb(124 58 237 / .7); }
+.note-icon svg { width: 55%; height: 55%; }
+.note h3 { margin: 0 0 4px; font-family: var(--f-display); font-size: 1.12em; font-weight: 600; color: var(--text); }
+.note p + p { margin-top: 6px; }
+.note a { color: var(--accent-soft); text-underline-offset: 3px; }
+:root[data-theme="light"] .note a { color: var(--accent); }
 [hidden] { display: none !important; }
 .skeleton { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-weight: 600; font-size: 0.9rem; }
 @media (prefers-reduced-motion: reduce) { *, *::before { animation: none !important; transition: none !important; } }
@@ -478,9 +489,13 @@ footer { font-size: 0.8rem; color: var(--muted); max-width: 70ch; padding: 6px 2
     </div>
   </section>
 
-  <footer>
-    Prices are daily candles from Yahoo Finance, delayed about 15 minutes, without dividends. Everything here is pretend money and for fun. It isn't financial advice, and past moves don't predict future ones. Future simulations replay the stock's past daily moves in random order, so they show a range of what's plausible, not what will happen.
-    Charts by <a href="https://www.tradingview.com/" target="_blank" rel="noopener" style="color:inherit">TradingView Lightweight Charts</a>.
+  <footer class="note">
+    <div class="note-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.5"/></svg></div>
+    <div>
+      <h3>Pretend money, not financial advice</h3>
+      <p>Everything here is for fun and learning. Past moves don't predict future ones, and the Future tab replays a stock's past daily moves in random order, so it shows a range of what's plausible, not what will happen.</p>
+      <p>Prices are daily candles from Yahoo Finance, delayed about 15 minutes, without dividends. Charts by <a href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView Lightweight Charts</a>.</p>
+    </div>
   </footer>
 </div>
 
